@@ -23,7 +23,10 @@ uses
   untConfigManager,
   untCliente,
   untClienteRepository,
-  untClienteRepositoryFirebird;
+  untClienteRepositoryFirebird,
+  untProduto,
+  untProdutoRepository,
+  untProdutoRepositoryFirebird;
 
 type
   TDatabaseBootstrapFirebird = class(TInterfacedObject, IDatabaseBootstrap)
@@ -187,29 +190,22 @@ end;
 
 procedure TDatabaseBootstrapFirebird.InserirProdutos;
 var
-  Qry: TFDQuery;
+  Repo: IProdutoRepository;
+  Produto: TProduto;
   I: Integer;
 begin
-  Qry := TFDQuery.Create(nil);
-  try
-    Qry.Connection := FConnBoot;
+  Repo := TProdutoRepositoryFirebird.Create(FConnBoot);
 
-    // Injeção de PRODUTOS
-    for I := 1 to 10 do
-    begin
-      Qry.SQL.Text :=
-        'INSERT INTO PRODUTO (CODIGO, DESCRICAO, PRECO_VENDA) ' +
-        'VALUES (:COD, :DESC, :PRECO)';
-
-      Qry.ParamByName('COD').AsInteger := I;
-      Qry.ParamByName('DESC').AsString := 'Produto ' + I.ToString;
-      Qry.ParamByName('PRECO').AsFloat := 10 * I;
-
-      Qry.ExecSQL;
+  for I := Low(SEED_PRODUTOS) to High(SEED_PRODUTOS) do
+  begin
+    Produto := TProduto.Criar(I + 1,
+                              SEED_PRODUTOS[I].Descricao,
+                              SEED_PRODUTOS[I].Preco);
+    try
+      Repo.Inserir(Produto);
+    finally
+      Produto.Free;
     end;
-
-  finally
-    Qry.Free;
   end;
 end;
 
