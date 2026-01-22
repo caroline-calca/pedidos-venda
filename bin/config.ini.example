@@ -1,0 +1,7 @@
+[database]
+database=C:\Users\carol\Desktop\pedidos-venda\bin\teste.fdb
+username=SYSDBA
+password=masterkey
+server=localhost
+port=3050
+clientlibrary=C:\Users\carol\Desktop\pedidos-venda\bin\fbclient.dll

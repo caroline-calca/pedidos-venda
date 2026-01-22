@@ -3,9 +3,25 @@ unit frmMain;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Datasnap.DBClient,
-  Vcl.StdCtrls, Vcl.Grids, Vcl.DBGrids, Vcl.ExtCtrls, Vcl.Buttons;
+  Winapi.Windows,
+  Winapi.Messages,
+  System.SysUtils,
+  System.Variants,
+  System.Classes,
+  Vcl.Graphics,
+  Vcl.Controls,
+  Vcl.Forms,
+  Vcl.Dialogs,
+  Data.DB,
+  Datasnap.DBClient,
+  Vcl.StdCtrls,
+  Vcl.Grids,
+  Vcl.DBGrids,
+  Vcl.ExtCtrls,
+  Vcl.Buttons,
+
+  untUtils,
+  frmConfig;
 
 type
   TfMain = class(TForm)
@@ -42,6 +58,7 @@ type
     cdsProdDelidpeditem: TIntegerField;
     btnConfigurar: TBitBtn;
     Label1: TLabel;
+    procedure btnConfigurarClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -54,5 +71,16 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TfMain.btnConfigurarClick(Sender: TObject);
+begin
+  if TfConfig.Executar(mcOpcional) = mrOk then
+  begin
+    ShowMsg('As configurações foram alteradas.' + sLineBreak +
+            'O sistema será encerrado para aplicar as mudanças.', mtInfo);
+
+    Application.Terminate;
+  end;
+end;
 
 end.

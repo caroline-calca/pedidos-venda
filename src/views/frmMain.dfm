@@ -10,6 +10,7 @@ object fMain: TfMain
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
+  Position = poScreenCenter
   TextHeight = 15
   object Panel1: TPanel
     Left = 0
@@ -18,7 +19,6 @@ object fMain: TfMain
     Height = 41
     Align = alTop
     TabOrder = 0
-    ExplicitWidth = 584
     DesignSize = (
       580
       41)
@@ -49,7 +49,6 @@ object fMain: TfMain
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      ExplicitLeft = 367
     end
     object btnCancelar: TButton
       Left = 429
@@ -65,7 +64,6 @@ object fMain: TfMain
       Font.Style = []
       ParentFont = False
       TabOrder = 1
-      ExplicitLeft = 473
     end
     object btnConfigurar: TBitBtn
       Left = 535
@@ -79,10 +77,10 @@ object fMain: TfMain
       Font.Height = -15
       Font.Name = 'Segoe UI'
       Font.Style = []
-      ModalResult = 12
       NumGlyphs = 2
       ParentFont = False
       TabOrder = 2
+      OnClick = btnConfigurarClick
     end
   end
   object Panel2: TPanel
@@ -92,9 +90,6 @@ object fMain: TfMain
     Height = 410
     Align = alClient
     TabOrder = 1
-    ExplicitTop = 12
-    ExplicitWidth = 584
-    ExplicitHeight = 429
     DesignSize = (
       580
       410)
@@ -248,8 +243,6 @@ object fMain: TfMain
     Height = 41
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 400
-    ExplicitWidth = 584
     DesignSize = (
       580
       41)
@@ -293,7 +286,6 @@ object fMain: TfMain
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      ExplicitLeft = 464
     end
   end
   object cdsProdutos: TClientDataSet
