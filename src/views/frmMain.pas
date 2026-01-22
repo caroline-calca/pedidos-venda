@@ -77,12 +77,17 @@ type
     procedure edtValorExit(Sender: TObject);
     procedure edtIdClienteExit(Sender: TObject);
     procedure edtIdProdutoExit(Sender: TObject);
+    procedure btnAdicionarClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     const cVlrMask: String = '#,###,###,##0.00';
 
     procedure LimpaTela;
     procedure LimparCliente;
     procedure LimparProduto;
+
+    procedure AtualizarTotal;
+    function ValidoAdicionar: Boolean;
 
     procedure CarregarCliente;
     procedure CarregarProduto;
@@ -96,6 +101,66 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TfMain.btnAdicionarClick(Sender: TObject);
+var
+  Qtd: Double;
+  VlrUnit: Double;
+begin
+  if not ValidoAdicionar then
+    Exit;
+
+  Qtd := StrToFloatDef(edtQtd.Text, 0);
+  VlrUnit := StrToFloatDef(edtValor.Text, 0);
+
+  cdsProdutos.Append;
+  cdsProdutosidproduto.AsInteger   := StrToInt(edtIdProduto.Text);
+  cdsProdutosdescricao.AsString    := edtDescProduto.Text;
+  cdsProdutosquantidade.AsFloat    := Qtd;
+  cdsProdutosvlrunitario.AsFloat   := VlrUnit;
+  cdsProdutosvlrtotal.AsFloat      := Qtd * VlrUnit;
+  cdsProdutos.Post;
+
+  AtualizarTotal;
+  LimparProduto;
+  edtQtd.Text := '0';
+  edtIdProduto.SetFocus;
+end;
+
+function TfMain.ValidoAdicionar: Boolean;
+begin
+  Result := False;
+
+  if Trim(edtNomeCliente.Text) = '' then
+  begin
+    ShowMsg('Selecione um cliente antes de adicionar produtos.', mtWarn);
+    edtIdCliente.SetFocus;
+    Exit;
+  end;
+
+  if Trim(edtDescProduto.Text) = '' then
+  begin
+    ShowMsg('Selecione um produto.', mtWarn);
+    edtIdProduto.SetFocus;
+    Exit;
+  end;
+
+  if StrToFloatDef(edtQtd.Text, 0) <= 0 then
+  begin
+    ShowMsg('Quantidade inválida.', mtWarn);
+    edtQtd.SetFocus;
+    Exit;
+  end;
+
+  if StrToFloatDef(edtValor.Text, 0) <= 0 then
+  begin
+    ShowMsg('Valor unitário inválido.', mtWarn);
+    edtValor.SetFocus;
+    Exit;
+  end;
+
+  Result := True;
+end;
 
 procedure TfMain.btnConfigurarClick(Sender: TObject);
 begin
@@ -185,6 +250,12 @@ begin
   edtValor.Text := vValor;
 end;
 
+procedure TfMain.FormCreate(Sender: TObject);
+begin
+  cdsProdutos.CreateDataSet;
+  cdsProdDel.CreateDataSet;
+end;
+
 procedure TfMain.FormShow(Sender: TObject);
 begin
   edtIdCliente.SetFocus;
@@ -193,9 +264,9 @@ end;
 procedure TfMain.LimpaTela;
 begin
   edtIdCliente.Text := EmptyStr;
-  edtIdClienteExit(nil);
+  LimparCliente;
   edtIdProduto.Text := EmptyStr;
-  edtIdProdutoExit(nil);
+  LimparProduto;
   edtQtd.Text := '0';
   cdsProdutos.EmptyDataSet;
   cdsProdDel.EmptyDataSet;
@@ -285,6 +356,27 @@ begin
   finally
     Service.Free;
   end;
+end;
+
+procedure TfMain.AtualizarTotal;
+var
+  Total: Double;
+begin
+  Total := 0;
+
+  cdsProdutos.DisableControls;
+  try
+    cdsProdutos.First;
+    while not cdsProdutos.Eof do
+    begin
+      Total := Total + cdsProdutosvlrtotal.AsFloat;
+      cdsProdutos.Next;
+    end;
+  finally
+    cdsProdutos.EnableControls;
+  end;
+
+  lblTotal.Caption := FormatFloat('R$ ' + cVlrMask, Total);
 end;
 
 end.

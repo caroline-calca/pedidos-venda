@@ -11,6 +11,7 @@ object fMain: TfMain
   Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poScreenCenter
+  OnCreate = FormCreate
   OnShow = FormShow
   TextHeight = 15
   object Panel1: TPanel
@@ -163,6 +164,7 @@ object fMain: TfMain
       Font.Style = []
       ParentFont = False
       TabOrder = 4
+      OnClick = btnAdicionarClick
     end
     object dbgProdutos: TDBGrid
       Left = 5
@@ -340,7 +342,7 @@ object fMain: TfMain
     end
     object cdsProdutosdescricao: TStringField
       DisplayLabel = 'Descri'#231#227'o'
-      DisplayWidth = 55
+      DisplayWidth = 40
       FieldName = 'descricao'
       Size = 150
     end
