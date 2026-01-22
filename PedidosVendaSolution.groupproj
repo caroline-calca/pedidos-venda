@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{0092E41B-1392-4D41-A710-11BBFA681B71}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="src\PedidosVenda.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="tests\PedidosVendaTests.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="PedidosVenda">
+        <MSBuild Projects="src\PedidosVenda.dproj"/>
+    </Target>
+    <Target Name="PedidosVenda:Clean">
+        <MSBuild Projects="src\PedidosVenda.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="PedidosVenda:Make">
+        <MSBuild Projects="src\PedidosVenda.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="PedidosVendaTests">
+        <MSBuild Projects="tests\PedidosVendaTests.dproj"/>
+    </Target>
+    <Target Name="PedidosVendaTests:Clean">
+        <MSBuild Projects="tests\PedidosVendaTests.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="PedidosVendaTests:Make">
+        <MSBuild Projects="tests\PedidosVendaTests.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="PedidosVenda;PedidosVendaTests"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="PedidosVenda:Clean;PedidosVendaTests:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="PedidosVenda:Make;PedidosVendaTests:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
