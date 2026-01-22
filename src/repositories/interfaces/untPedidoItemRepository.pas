@@ -14,6 +14,7 @@ type
 
     function CarregarItens(const ANumeroPedido: Integer): TObjectList<TPedidoItem>;
     procedure ExcluirItensPorPedido(const ANumeroPedido: Integer);
+    procedure ExcluirItemPorID(const AID: Integer);
   end;
 
 implementation

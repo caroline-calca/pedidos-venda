@@ -25,6 +25,7 @@ type
 
     function CarregarItens(const ANumeroPedido: Integer): TObjectList<TPedidoItem>;
     procedure ExcluirItensPorPedido(const ANumeroPedido: Integer);
+    procedure ExcluirItemPorID(const AID: Integer);
   end;
 
 implementation
@@ -116,6 +117,24 @@ begin
     Qry.Connection := FConnection;
     Qry.SQL.Text := 'DELETE FROM PEDIDO_ITEM WHERE NUMERO_PEDIDO = :NUM';
     Qry.ParamByName('NUM').AsInteger := ANumeroPedido;
+    Qry.ExecSQL;
+  finally
+    Qry.Free;
+  end;
+end;
+
+procedure TPedidoItemRepositoryFirebird.ExcluirItemPorID(const AID: Integer);
+var
+  Qry: TFDQuery;
+begin
+  if AID <= 0 then
+    Exit;
+
+  Qry := TFDQuery.Create(nil);
+  try
+    Qry.Connection := FConnection;
+    Qry.SQL.Text := 'DELETE FROM PEDIDO_ITEM WHERE ID = :ID';
+    Qry.ParamByName('ID').AsInteger := AID;
     Qry.ExecSQL;
   finally
     Qry.Free;
