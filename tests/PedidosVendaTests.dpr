@@ -5,7 +5,6 @@ program PedidosVendaTests;
 {$ENDIF}
 {$STRONGLINKTYPES ON}
 uses
-  FastMM4,
   DUnitX.MemoryLeakMonitor.FastMM4,
   System.SysUtils,
   {$IFDEF TESTINSIGHT}
@@ -55,13 +54,11 @@ begin
     if not results.AllPassed then
       System.ExitCode := EXIT_ERRORS;
 
+    // Pausa SEM depender de ExitBehavior
     {$IFNDEF CI}
-    //We don't want this happening when running under CI.
-    if TDUnitX.Options.ExitBehavior = TDUnitXExitBehavior.Pause then
-    begin
-      System.Write('Done.. press <Enter> key to quit.');
-      System.Readln;
-    end;
+    System.Writeln;
+    System.Write('Pressione <Enter> para sair...');
+    System.Readln;
     {$ENDIF}
   except
     on E: Exception do
