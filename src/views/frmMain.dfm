@@ -51,6 +51,7 @@ object fMain: TfMain
       Font.Style = []
       ParentFont = False
       TabOrder = 0
+      OnClick = btnCarregarClick
     end
     object btnCancelar: TButton
       Left = 434
@@ -114,7 +115,7 @@ object fMain: TfMain
     end
     object Label3: TLabel
       Left = 34
-      Top = 52
+      Top = 87
       Width = 46
       Height = 15
       Caption = 'Produto:'
@@ -127,7 +128,7 @@ object fMain: TfMain
     end
     object Label4: TLabel
       Left = 15
-      Top = 87
+      Top = 122
       Width = 65
       Height = 15
       Caption = 'Quantidade:'
@@ -140,7 +141,7 @@ object fMain: TfMain
     end
     object Label5: TLabel
       Left = 215
-      Top = 87
+      Top = 122
       Width = 73
       Height = 15
       Caption = 'Valor unit'#225'rio:'
@@ -153,7 +154,7 @@ object fMain: TfMain
     end
     object Label7: TLabel
       Left = 15
-      Top = 124
+      Top = 52
       Width = 65
       Height = 15
       Caption = 'Observa'#231#227'o:'
@@ -166,7 +167,7 @@ object fMain: TfMain
     end
     object btnAdicionar: TButton
       Left = 425
-      Top = 82
+      Top = 118
       Width = 135
       Height = 25
       Anchors = [akTop, akRight]
@@ -177,7 +178,7 @@ object fMain: TfMain
       Font.Name = 'Calibri Light'
       Font.Style = []
       ParentFont = False
-      TabOrder = 4
+      TabOrder = 5
       OnClick = btnAdicionarClick
     end
     object dbgProdutos: TDBGrid
@@ -208,30 +209,30 @@ object fMain: TfMain
     end
     object edtIdProduto: TEdit
       Left = 86
-      Top = 49
+      Top = 84
       Width = 68
       Height = 23
       Alignment = taRightJustify
       NumbersOnly = True
-      TabOrder = 1
+      TabOrder = 2
       OnChange = edtIdProdutoChange
       OnExit = edtIdProdutoExit
     end
     object edtQtd: TEdit
       Left = 86
-      Top = 84
+      Top = 119
       Width = 110
       Height = 23
       Alignment = taRightJustify
       MaxLength = 17
       NumbersOnly = True
-      TabOrder = 2
+      TabOrder = 3
       Text = '0,00'
       OnExit = edtQtdExit
     end
     object edtValor: TEdit
       Left = 294
-      Top = 84
+      Top = 119
       Width = 110
       Height = 23
       Hint = 'Preencha apenas com n'#250'meros.'
@@ -241,14 +242,14 @@ object fMain: TfMain
       NumbersOnly = True
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 3
+      TabOrder = 4
       Text = '0,00'
       OnExit = edtValorExit
     end
     object edtNomeCliente: TEdit
       Left = 160
       Top = 14
-      Width = 255
+      Width = 242
       Height = 23
       Anchors = [akLeft, akTop, akRight]
       Color = cl3DLight
@@ -257,7 +258,7 @@ object fMain: TfMain
     end
     object edtDescProduto: TEdit
       Left = 160
-      Top = 49
+      Top = 84
       Width = 400
       Height = 23
       Anchors = [akLeft, akTop, akRight]
@@ -266,9 +267,9 @@ object fMain: TfMain
       TabOrder = 8
     end
     object edtCidadeCliente: TEdit
-      Left = 421
+      Left = 408
       Top = 14
-      Width = 105
+      Width = 114
       Height = 23
       Anchors = [akTop, akRight]
       Color = cl3DLight
@@ -276,9 +277,9 @@ object fMain: TfMain
       TabOrder = 9
     end
     object edtUFCliente: TEdit
-      Left = 532
+      Left = 528
       Top = 14
-      Width = 28
+      Width = 32
       Height = 23
       Anchors = [akTop, akRight]
       Color = cl3DLight
@@ -287,12 +288,12 @@ object fMain: TfMain
     end
     object edtObservacao: TEdit
       Left = 86
-      Top = 121
+      Top = 49
       Width = 474
       Height = 23
       Anchors = [akLeft, akTop, akRight]
       MaxLength = 255
-      TabOrder = 5
+      TabOrder = 1
     end
   end
   object Panel4: TPanel

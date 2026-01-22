@@ -94,6 +94,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure btnGravarClick(Sender: TObject);
     procedure edtQtdExit(Sender: TObject);
+    procedure btnCarregarClick(Sender: TObject);
   private
     const cVlrMask: String = '#,###,###,##0.00';
 
@@ -104,9 +105,12 @@ type
     procedure AtualizarTotal;
     procedure AdicionarMascaraValores(Sender: TEdit);
     function ValidoAdicionar: Boolean;
+    function NumeroPedidoAtual: Integer;
 
     procedure CarregarCliente;
     procedure CarregarProduto;
+
+    function CriarPedidoService: TPedidoService;
   public
     { Public declarations }
   end;
@@ -122,14 +126,18 @@ procedure TfMain.btnAdicionarClick(Sender: TObject);
 var
   Qtd: Double;
   VlrUnit: Double;
+  NumPed: Integer;
 begin
   if not ValidoAdicionar then
     Exit;
 
+  NumPed := NumeroPedidoAtual;
   Qtd := StrToFloatDef(edtQtd.Text, 0);
   VlrUnit := StrToFloatDef(edtValor.Text, 0);
 
   cdsProdutos.Append;
+  cdsProdutosidpeditem.AsInteger   := 0;
+  cdsProdutosidpedgeral.AsInteger  := NumPed;
   cdsProdutosidproduto.AsInteger   := StrToInt(edtIdProduto.Text);
   cdsProdutosdescricao.AsString    := edtDescProduto.Text;
   cdsProdutosquantidade.AsFloat    := Qtd;
@@ -141,6 +149,14 @@ begin
   LimparProduto;
   edtQtd.Text := '0,00';
   edtIdProduto.SetFocus;
+end;
+
+function TfMain.NumeroPedidoAtual: Integer;
+begin
+  Result := 0;
+
+  if not cdsProdutos.IsEmpty then
+    Result := cdsProdutosidpedgeral.AsInteger;
 end;
 
 function TfMain.ValidoAdicionar: Boolean;
@@ -178,6 +194,40 @@ begin
   Result := True;
 end;
 
+procedure TfMain.btnCarregarClick(Sender: TObject);
+var
+  Num: Integer;
+  Service: TPedidoService;
+  Pedido: TPedido;
+begin
+  LimpaTela;
+
+  Num := StrToIntDef(InputBox('Carregar Pedido', 'Informe o número do pedido:', ''), 0);
+  if Num <= 0 then
+    Exit;
+
+  Service := CriarPedidoService;
+  try
+    Pedido := nil;
+    try
+      Service.CarregarPedido(Num, Pedido, cdsProdutos);
+
+      edtIdCliente.Text := Pedido.CodigoCliente.ToString;
+      CarregarCliente;
+
+      edtObservacao.Text := Pedido.Observacao;
+
+      AtualizarTotal;
+
+      ShowMsg(Format('Pedido %d carregado.', [Num]), mtInfo);
+    finally
+      Pedido.Free;
+    end;
+  finally
+    Service.Free;
+  end;
+end;
+
 procedure TfMain.btnConfigurarClick(Sender: TObject);
 begin
   if TfConfig.Executar(mcOpcional) = mrOk then
@@ -191,22 +241,13 @@ end;
 
 procedure TfMain.btnGravarClick(Sender: TObject);
 var
-  PedidoRepo: IPedidoRepository;
-  ItemRepo: IPedidoItemRepository;
-  CliRepo: IClienteRepository;
-  ProdRepo: IProdutoRepository;
   Service: TPedidoService;
   NumPedido: Integer;
 begin
   try
-    PedidoRepo := TPedidoRepositoryFirebird.Create(FConnectionManager.Connection);
-    ItemRepo   := TPedidoItemRepositoryFirebird.Create(FConnectionManager.Connection);
-    CliRepo    := TClienteRepositoryFirebird.Create(FConnectionManager.Connection);
-    ProdRepo   := TProdutoRepositoryFirebird.Create(FConnectionManager.Connection);
-
-    Service := TPedidoService.Create(PedidoRepo, ItemRepo, CliRepo, ProdRepo);
+    Service := CriarPedidoService;
     try
-      NumPedido := Service.GravarPedido(0,
+      NumPedido := Service.GravarPedido(NumeroPedidoAtual,
                                         StrToIntDef(edtIdCliente.Text, 0),
                                         edtObservacao.Text,
                                         cdsProdutos,
@@ -442,6 +483,21 @@ begin
   end;
 
   lblTotal.Caption := FormatFloat('R$ ' + cVlrMask, Total);
+end;
+
+function TfMain.CriarPedidoService: TPedidoService;
+var
+  PedRepo: IPedidoRepository;
+  ItemRepo: IPedidoItemRepository;
+  CliRepo: IClienteRepository;
+  ProdRepo: IProdutoRepository;
+begin
+  PedRepo  := TPedidoRepositoryFirebird.Create(FConnectionManager.Connection);
+  ItemRepo := TPedidoItemRepositoryFirebird.Create(FConnectionManager.Connection);
+  CliRepo  := TClienteRepositoryFirebird.Create(FConnectionManager.Connection);
+  ProdRepo := TProdutoRepositoryFirebird.Create(FConnectionManager.Connection);
+
+  Result := TPedidoService.Create(PedRepo, ItemRepo, CliRepo, ProdRepo);
 end;
 
 end.

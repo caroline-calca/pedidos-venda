@@ -31,7 +31,7 @@ type
       const AObservacao: string; AItens: TDataSet;AItensDeletados: TDataSet): Integer;
 
     procedure CancelarPedido(const ANumero: Integer);
-    procedure CarregarPedido(const ANumero: Integer; out APedido: TPedido; out AItens: TDataSet);
+    procedure CarregarPedido(const ANumero: Integer; out APedido: TPedido; out AItens: TClientDataSet);
   end;
 
 implementation
@@ -213,7 +213,7 @@ begin
   end;
 end;
 
-procedure TPedidoService.CarregarPedido(const ANumero: Integer; out APedido: TPedido; out AItens: TDataSet);
+procedure TPedidoService.CarregarPedido(const ANumero: Integer; out APedido: TPedido; out AItens: TClientDataSet);
 var
   Pedido: TPedido;
   ItensObj: TObjectList<TPedidoItem>;
