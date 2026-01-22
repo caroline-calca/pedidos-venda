@@ -89,11 +89,10 @@ begin
 
     if not Qry.IsEmpty then
     begin
-      Result := TCliente.Create;
-      Result.Codigo := Qry.FieldByName('CODIGO').AsInteger;
-      Result.Nome   := Qry.FieldByName('NOME').AsString;
-      Result.Cidade := Qry.FieldByName('CIDADE').AsString;
-      Result.UF     := Qry.FieldByName('UF').AsString;
+      Result := TCliente.Criar(Qry.FieldByName('CODIGO').AsInteger,
+                               Qry.FieldByName('NOME').AsString,
+                               Qry.FieldByName('CIDADE').AsString,
+                               Qry.FieldByName('UF').AsString);
     end;
   finally
     Qry.Free;

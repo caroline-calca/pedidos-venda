@@ -5,6 +5,9 @@ interface
 uses
   System.SysUtils,
   FireDAC.Comp.Client,
+  FireDAC.Stan.Param,
+  Data.DB,
+
   untProdutoRepository,
   untProduto,
   untConnectionManager;
@@ -83,10 +86,9 @@ begin
 
     if not Qry.IsEmpty then
     begin
-      Result := TProduto.Create;
-      Result.Codigo := Qry.FieldByName('CODIGO').AsInteger;
-      Result.Descricao := Qry.FieldByName('DESCRICAO').AsString;
-      Result.PrecoVenda := Qry.FieldByName('PRECO_VENDA').AsFloat;
+      Result := TProduto.Criar(Qry.FieldByName('CODIGO').AsInteger,
+                               Qry.FieldByName('DESCRICAO').AsString,
+                               Qry.FieldByName('PRECO_VENDA').AsFloat);
     end;
   finally
     Qry.Free;
