@@ -67,6 +67,7 @@ object fMain: TfMain
       Font.Style = []
       ParentFont = False
       TabOrder = 1
+      OnClick = btnCancelarClick
     end
     object btnConfigurar: TBitBtn
       Left = 540

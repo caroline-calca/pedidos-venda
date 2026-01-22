@@ -95,6 +95,7 @@ type
     procedure btnGravarClick(Sender: TObject);
     procedure edtQtdExit(Sender: TObject);
     procedure btnCarregarClick(Sender: TObject);
+    procedure btnCancelarClick(Sender: TObject);
   private
     const cVlrMask: String = '#,###,###,##0.00';
 
@@ -192,6 +193,37 @@ begin
   end;
 
   Result := True;
+end;
+
+procedure TfMain.btnCancelarClick(Sender: TObject);
+var
+  Service: TPedidoService;
+  Num: Integer;
+begin
+  try
+    if (ShowMsg('Deseja cancelar o pedido atual?', mtQuest) <> mrYes) then
+      Exit;
+
+    Num := NumeroPedidoAtual;
+
+    if Num > 0 then
+    begin
+      Service := CriarPedidoService;
+      try
+        Service.CancelarPedido(Num);
+      finally
+        Service.Free;
+      end;
+    end;
+
+    LimpaTela;
+    edtIdCliente.SetFocus;
+
+    ShowMsg('Pedido cancelado com sucesso.', mtInfo);
+  except
+    on E: Exception do
+      ShowMsg('Erro ao cancelar pedido: ' + E.Message, mtErr);
+  end;
 end;
 
 procedure TfMain.btnCarregarClick(Sender: TObject);
