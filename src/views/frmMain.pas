@@ -330,6 +330,8 @@ begin
         end;
 
         cdsProdutos.Delete;
+
+        AtualizarTotal;
       end;
     end;
 
