@@ -104,21 +104,26 @@ type
     var
       FNumeroPedidoAtual: Integer;
       FEditandoItem: Boolean;
-      FItemEditandoID: Integer;
+
+    procedure CarregarCliente;
+    procedure CarregarProduto;
+    procedure CarregaItemEdicao;
+    procedure CarregarPedido(ANumero: Integer);
+    procedure CancelarPedido;
+
+    procedure AdicionarItem;
+    procedure ExcluirItem;
+    procedure GravarPedido;
+    procedure AtualizarTotal;
 
     procedure LimpaTela;
     procedure LimparCliente;
     procedure LimparProduto;
     procedure LimparModoEdicaoItem;
 
-    procedure AtualizarTotal;
     procedure AdicionarMascaraValores(Sender: TEdit);
     function ValidoAdicionar: Boolean;
     function NumeroPedidoAtual: Integer;
-
-    procedure CarregarCliente;
-    procedure CarregarProduto;
-    procedure CarregaItemEdicao;
 
     function CriarPedidoService: TPedidoService;
   public
@@ -133,15 +138,18 @@ implementation
 {$R *.dfm}
 
 procedure TfMain.btnAdicionarClick(Sender: TObject);
-var
-  Qtd: Double;
-  VlrUnit: Double;
-  NumPed: Integer;
 begin
   if not ValidoAdicionar then
     Exit;
 
-  NumPed := NumeroPedidoAtual;
+  AdicionarItem;
+end;
+
+procedure TfMain.AdicionarItem;
+var
+  Qtd: Double;
+  VlrUnit: Double;
+begin
   Qtd := StrToFloatDef(edtQtd.Text, 0);
   VlrUnit := StrToFloatDef(edtValor.Text, 0);
 
@@ -168,55 +176,20 @@ begin
   edtIdProduto.SetFocus;
 end;
 
-function TfMain.NumeroPedidoAtual: Integer;
-begin
-  Result := FNumeroPedidoAtual;
-end;
-
-function TfMain.ValidoAdicionar: Boolean;
-begin
-  Result := False;
-
-  if Trim(edtNomeCliente.Text) = '' then
-  begin
-    ShowMsg('Selecione um cliente antes de adicionar produtos.', mtWarn);
-    edtIdCliente.SetFocus;
-    Exit;
-  end;
-
-  if Trim(edtDescProduto.Text) = '' then
-  begin
-    ShowMsg('Selecione um produto.', mtWarn);
-    edtIdProduto.SetFocus;
-    Exit;
-  end;
-
-  if StrToFloatDef(edtQtd.Text, 0) <= 0 then
-  begin
-    ShowMsg('Quantidade inválida.', mtWarn);
-    edtQtd.SetFocus;
-    Exit;
-  end;
-
-  if StrToFloatDef(edtValor.Text, 0) <= 0 then
-  begin
-    ShowMsg('Valor unitário inválido.', mtWarn);
-    edtValor.SetFocus;
-    Exit;
-  end;
-
-  Result := True;
-end;
-
 procedure TfMain.btnCancelarClick(Sender: TObject);
+begin
+  if (ShowMsg('Deseja cancelar o pedido atual?', mtQuest) <> mrYes) then
+      Exit;
+
+  CancelarPedido;
+end;
+
+procedure TfMain.CancelarPedido;
 var
   Service: TPedidoService;
   Num: Integer;
 begin
   try
-    if (ShowMsg('Deseja cancelar o pedido atual?', mtQuest) <> mrYes) then
-      Exit;
-
     Num := NumeroPedidoAtual;
 
     if Num > 0 then
@@ -242,22 +215,28 @@ end;
 procedure TfMain.btnCarregarClick(Sender: TObject);
 var
   Num: Integer;
-  Service: TPedidoService;
-  Pedido: TPedido;
 begin
   Num := StrToIntDef(InputBox('Carregar Pedido', 'Informe o número do pedido:', ''), 0);
   if Num <= 0 then
     Exit;
 
+  CarregarPedido(Num);
+end;
+
+procedure TfMain.CarregarPedido(ANumero: Integer);
+var
+  Service: TPedidoService;
+  Pedido: TPedido;
+begin
   LimpaTela;
 
   Service := CriarPedidoService;
   try
     Pedido := nil;
     try
-      Service.CarregarPedido(Num, Pedido, cdsProdutos);
+      Service.CarregarPedido(ANumero, Pedido, cdsProdutos);
 
-      FNumeroPedidoAtual := Num;
+      FNumeroPedidoAtual := ANumero;
 
       edtIdCliente.Text := Pedido.CodigoCliente.ToString;
       CarregarCliente;
@@ -266,7 +245,7 @@ begin
 
       AtualizarTotal;
 
-      ShowMsg(Format('Pedido %d carregado.', [Num]), mtInfo);
+      ShowMsg(Format('Pedido %d carregado.', [ANumero]), mtInfo);
     finally
       Pedido.Free;
     end;
@@ -289,6 +268,12 @@ begin
 end;
 
 procedure TfMain.btnGravarClick(Sender: TObject);
+begin
+  GravarPedido;
+  edtIdCliente.SetFocus;
+end;
+
+procedure TfMain.GravarPedido;
 var
   Service: TPedidoService;
   NumPedido: Integer;
@@ -312,8 +297,6 @@ begin
     on E: Exception do
       ShowMsg('Erro ao gravar pedido: ' + E.Message, mtErr);
   end;
-
-  edtIdCliente.SetFocus;
 end;
 
 procedure TfMain.btnNovoClick(Sender: TObject);
@@ -335,19 +318,7 @@ begin
     if Key = vk_delete then
     begin
       if ShowMsg('Deseja excluir o item do pedido?', mtQuest) = mrYes then
-      begin
-        // adiciona em outro dataset, para excluir apenas ao gravar, na transação
-        if (cdsProdutos.FieldByName('idpeditem').AsInteger > 0) then
-        begin
-          cdsProdDel.Append;
-          cdsProdDel.FieldByName('idpeditem').AsInteger := cdsProdutos.FieldByName('idpeditem').AsInteger;
-          cdsProdDel.Post;
-        end;
-
-        cdsProdutos.Delete;
-
-        AtualizarTotal;
-      end;
+        ExcluirItem;
     end;
 
     if Key = vk_return then
@@ -361,110 +332,24 @@ begin
   end;
 end;
 
-procedure TfMain.edtIdClienteExit(Sender: TObject);
+procedure TfMain.ExcluirItem;
 begin
-  CarregarCliente;
-end;
-
-procedure TfMain.edtIdProdutoChange(Sender: TObject);
-begin
-  edtDescProduto.Text := EmptyStr;
-  edtQtd.Text := '0,00';
-  edtValor.Text := '0,00';
-end;
-
-procedure TfMain.edtIdProdutoExit(Sender: TObject);
-begin
-  CarregarProduto;
-end;
-
-procedure TfMain.edtQtdExit(Sender: TObject);
-begin
-  AdicionarMascaraValores(edtQtd);
-end;
-
-procedure TfMain.AdicionarMascaraValores(Sender: TEdit);
-var
-  vValor: String;
-begin
-  vValor := EmptyStr;
-
-  if Sender.Text <> EmptyStr then
+  // adiciona em outro dataset, para excluir apenas ao gravar, na transação
+  if (cdsProdutos.FieldByName('idpeditem').AsInteger > 0) then
   begin
-    vValor := StringReplace(Sender.Text, '.', EmptyStr, [rfReplaceAll]);
-    vValor := StringReplace(Sender.Text, ',', EmptyStr, [rfReplaceAll]);
+    cdsProdDel.Append;
+    cdsProdDel.FieldByName('idpeditem').AsInteger := cdsProdutos.FieldByName('idpeditem').AsInteger;
+    cdsProdDel.Post;
+  end;
 
-    if (Length(vValor) = 1) then
-      vValor := '0,0' + vValor
-    else if (Length(vValor) = 2) then
-      vValor := '0,' + vValor
-    else
-      vValor := Copy(vValor, 1, Length(vValor)-2) + ',' + Copy(vValor, Length(vValor)-1, 2);
-
-    vValor := FormatFloat(cVlrMask, StrToFloat(vValor));
-  end
-  else
-    vValor := '0,00';
-
-  Sender.Text := vValor;
-end;
-
-procedure TfMain.edtValorExit(Sender: TObject);
-begin
-  AdicionarMascaraValores(edtValor);
-end;
-
-procedure TfMain.FormCreate(Sender: TObject);
-begin
-  cdsProdutos.CreateDataSet;
-  cdsProdDel.CreateDataSet;
-end;
-
-procedure TfMain.FormShow(Sender: TObject);
-begin
-  LimpaTela;
-  edtIdCliente.SetFocus;
-end;
-
-procedure TfMain.LimpaTela;
-begin
-  FNumeroPedidoAtual := 0;
-
-  LimparModoEdicaoItem;
-
-  edtIdCliente.Text := EmptyStr;
-  LimparCliente;
-  edtIdProduto.Text := EmptyStr;
-  LimparProduto;
-  edtQtd.Text := '0,00';
-  edtObservacao.Text := EmptyStr;
-
-  cdsProdutos.EmptyDataSet;
-  cdsProdDel.EmptyDataSet;
+  cdsProdutos.Delete;
 
   AtualizarTotal;
 end;
 
-procedure TfMain.LimparCliente;
+procedure TfMain.edtIdClienteExit(Sender: TObject);
 begin
-  edtNomeCliente.Clear;
-  edtCidadeCliente.Clear;
-  edtUFCliente.Clear;
-end;
-
-procedure TfMain.LimparProduto;
-begin
-  edtDescProduto.Clear;
-  edtValor.Text := '0,00';
-end;
-
-procedure TfMain.LimparModoEdicaoItem;
-begin
-  edtIdCliente.Enabled := True;
-
-  FEditandoItem := False;
-  FItemEditandoID := 0;
-  btnAdicionar.Caption := 'Adicionar Produto';
+  CarregarCliente;
 end;
 
 procedure TfMain.CarregarCliente;
@@ -504,6 +389,18 @@ begin
   end;
 end;
 
+procedure TfMain.edtIdProdutoChange(Sender: TObject);
+begin
+  edtDescProduto.Text := EmptyStr;
+  edtQtd.Text := '0,00';
+  edtValor.Text := '0,00';
+end;
+
+procedure TfMain.edtIdProdutoExit(Sender: TObject);
+begin
+  CarregarProduto;
+end;
+
 procedure TfMain.CarregarProduto;
 var
   Cod: Integer;
@@ -540,6 +437,30 @@ begin
   end;
 end;
 
+procedure TfMain.edtQtdExit(Sender: TObject);
+begin
+  AdicionarMascaraValores(edtQtd);
+end;
+
+
+
+procedure TfMain.edtValorExit(Sender: TObject);
+begin
+  AdicionarMascaraValores(edtValor);
+end;
+
+procedure TfMain.FormCreate(Sender: TObject);
+begin
+  cdsProdutos.CreateDataSet;
+  cdsProdDel.CreateDataSet;
+end;
+
+procedure TfMain.FormShow(Sender: TObject);
+begin
+  LimpaTela;
+  edtIdCliente.SetFocus;
+end;
+
 procedure TfMain.CarregaItemEdicao;
 begin
   edtIdCliente.Enabled := False;
@@ -552,7 +473,6 @@ begin
 
   // marca modo edição
   FEditandoItem := True;
-  FItemEditandoID := cdsProdutosidpeditem.AsInteger;
   btnAdicionar.Caption := 'Atualizar Produto';
 
   edtQtd.SetFocus;
@@ -577,6 +497,112 @@ begin
   end;
 
   lblTotal.Caption := FormatFloat('R$ ' + cVlrMask, Total);
+end;
+
+procedure TfMain.LimpaTela;
+begin
+  FNumeroPedidoAtual := 0;
+
+  LimparModoEdicaoItem;
+
+  edtIdCliente.Text := EmptyStr;
+  LimparCliente;
+  edtIdProduto.Text := EmptyStr;
+  LimparProduto;
+  edtQtd.Text := '0,00';
+  edtObservacao.Text := EmptyStr;
+
+  cdsProdutos.EmptyDataSet;
+  cdsProdDel.EmptyDataSet;
+
+  AtualizarTotal;
+end;
+
+procedure TfMain.LimparCliente;
+begin
+  edtNomeCliente.Clear;
+  edtCidadeCliente.Clear;
+  edtUFCliente.Clear;
+end;
+
+procedure TfMain.LimparProduto;
+begin
+  edtDescProduto.Clear;
+  edtValor.Text := '0,00';
+end;
+
+procedure TfMain.LimparModoEdicaoItem;
+begin
+  edtIdCliente.Enabled := True;
+
+  FEditandoItem := False;
+  btnAdicionar.Caption := 'Adicionar Produto';
+end;
+
+procedure TfMain.AdicionarMascaraValores(Sender: TEdit);
+var
+  vValor: String;
+begin
+  vValor := EmptyStr;
+
+  if Sender.Text <> EmptyStr then
+  begin
+    vValor := StringReplace(Sender.Text, '.', EmptyStr, [rfReplaceAll]);
+    vValor := StringReplace(Sender.Text, ',', EmptyStr, [rfReplaceAll]);
+
+    if (Length(vValor) = 1) then
+      vValor := '0,0' + vValor
+    else if (Length(vValor) = 2) then
+      vValor := '0,' + vValor
+    else
+      vValor := Copy(vValor, 1, Length(vValor)-2) + ',' + Copy(vValor, Length(vValor)-1, 2);
+
+    vValor := FormatFloat(cVlrMask, StrToFloat(vValor));
+  end
+  else
+    vValor := '0,00';
+
+  Sender.Text := vValor;
+end;
+
+function TfMain.ValidoAdicionar: Boolean;
+begin
+  Result := False;
+
+  if Trim(edtNomeCliente.Text) = '' then
+  begin
+    ShowMsg('Selecione um cliente antes de adicionar produtos.', mtWarn);
+    edtIdCliente.SetFocus;
+    Exit;
+  end;
+
+  if Trim(edtDescProduto.Text) = '' then
+  begin
+    ShowMsg('Selecione um produto.', mtWarn);
+    edtIdProduto.SetFocus;
+    Exit;
+  end;
+
+  if StrToFloatDef(edtQtd.Text, 0) <= 0 then
+  begin
+    ShowMsg('Quantidade inválida.', mtWarn);
+    edtQtd.SetFocus;
+    Exit;
+  end;
+
+  if StrToFloatDef(edtValor.Text, 0) <= 0 then
+  begin
+    ShowMsg('Valor unitário inválido.', mtWarn);
+    edtValor.SetFocus;
+    Exit;
+  end;
+
+  Result := True;
+end;
+
+function TfMain.NumeroPedidoAtual: Integer;
+begin
+  Result := FNumeroPedidoAtual;
 end;
 
 function TfMain.CriarPedidoService: TPedidoService;
