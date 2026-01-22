@@ -18,7 +18,14 @@ uses
   untProduto in 'domain\untProduto.pas',
   untProdutoRepository in 'repositories\interfaces\untProdutoRepository.pas',
   untProdutoRepositoryFirebird in 'repositories\untProdutoRepositoryFirebird.pas',
-  untProdutoService in 'services\untProdutoService.pas';
+  untProdutoService in 'services\untProdutoService.pas',
+  untPedido in 'domain\untPedido.pas',
+  untPedidoItem in 'domain\untPedidoItem.pas',
+  untPedidoRepository in 'repositories\interfaces\untPedidoRepository.pas',
+  untPedidoItemRepository in 'repositories\interfaces\untPedidoItemRepository.pas',
+  untPedidoRepositoryFirebird in 'repositories\untPedidoRepositoryFirebird.pas',
+  untPedidoItemRepositoryFirebird in 'repositories\untPedidoItemRepositoryFirebird.pas',
+  untPedidoService in 'services\untPedidoService.pas';
 
 {$R *.res}
 

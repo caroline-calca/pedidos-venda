@@ -151,6 +151,13 @@
         <DCCReference Include="repositories\interfaces\untProdutoRepository.pas"/>
         <DCCReference Include="repositories\untProdutoRepositoryFirebird.pas"/>
         <DCCReference Include="services\untProdutoService.pas"/>
+        <DCCReference Include="domain\untPedido.pas"/>
+        <DCCReference Include="domain\untPedidoItem.pas"/>
+        <DCCReference Include="repositories\interfaces\untPedidoRepository.pas"/>
+        <DCCReference Include="repositories\interfaces\untPedidoItemRepository.pas"/>
+        <DCCReference Include="repositories\untPedidoRepositoryFirebird.pas"/>
+        <DCCReference Include="repositories\untPedidoItemRepositoryFirebird.pas"/>
+        <DCCReference Include="services\untPedidoService.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
