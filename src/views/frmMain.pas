@@ -82,6 +82,7 @@ type
     edtUFCliente: TEdit;
     Label7: TLabel;
     edtObservacao: TEdit;
+    btnNovo: TButton;
     procedure btnConfigurarClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure dbgProdutosKeyDown(Sender: TObject; var Key: Word;
@@ -96,6 +97,7 @@ type
     procedure edtQtdExit(Sender: TObject);
     procedure btnCarregarClick(Sender: TObject);
     procedure btnCancelarClick(Sender: TObject);
+    procedure btnNovoClick(Sender: TObject);
   private
     const cVlrMask: String = '#,###,###,##0.00';
 
@@ -297,6 +299,11 @@ begin
   end;
 
   edtIdCliente.SetFocus;
+end;
+
+procedure TfMain.btnNovoClick(Sender: TObject);
+begin
+  LimpaTela;
 end;
 
 procedure TfMain.dbgProdutosKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);

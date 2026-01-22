@@ -38,28 +38,12 @@ object fMain: TfMain
       ParentFont = False
     end
     object btnCarregar: TButton
-      Left = 328
+      Left = 378
       Top = 10
-      Width = 100
+      Width = 75
       Height = 25
       Anchors = [akTop, akRight]
-      Caption = 'Carregar Pedido'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Calibri Light'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 0
-      OnClick = btnCarregarClick
-    end
-    object btnCancelar: TButton
-      Left = 434
-      Top = 10
-      Width = 100
-      Height = 25
-      Anchors = [akTop, akRight]
-      Caption = 'Cancelar Pedido'
+      Caption = 'Carregar'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -67,6 +51,22 @@ object fMain: TfMain
       Font.Style = []
       ParentFont = False
       TabOrder = 1
+      OnClick = btnCarregarClick
+    end
+    object btnCancelar: TButton
+      Left = 459
+      Top = 10
+      Width = 75
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Cancelar'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Calibri Light'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 2
       OnClick = btnCancelarClick
     end
     object btnConfigurar: TBitBtn
@@ -86,8 +86,24 @@ object fMain: TfMain
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 2
+      TabOrder = 3
       OnClick = btnConfigurarClick
+    end
+    object btnNovo: TButton
+      Left = 297
+      Top = 10
+      Width = 75
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'Novo'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Calibri Light'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnClick = btnNovoClick
     end
   end
   object Panel2: TPanel
@@ -335,12 +351,12 @@ object fMain: TfMain
       ParentFont = False
     end
     object btnGravar: TButton
-      Left = 465
-      Top = 8
-      Width = 100
+      Left = 490
+      Top = 9
+      Width = 75
       Height = 25
       Anchors = [akTop, akRight]
-      Caption = 'Gravar Pedido'
+      Caption = 'Gravar'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -370,7 +386,7 @@ object fMain: TfMain
     end
     object cdsProdutosdescricao: TStringField
       DisplayLabel = 'Descri'#231#227'o'
-      DisplayWidth = 40
+      DisplayWidth = 45
       FieldName = 'descricao'
       Size = 150
     end
