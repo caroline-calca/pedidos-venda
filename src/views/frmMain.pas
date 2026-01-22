@@ -103,10 +103,13 @@ type
 
     var
       FNumeroPedidoAtual: Integer;
+      FEditandoItem: Boolean;
+      FItemEditandoID: Integer;
 
     procedure LimpaTela;
     procedure LimparCliente;
     procedure LimparProduto;
+    procedure LimparModoEdicaoItem;
 
     procedure AtualizarTotal;
     procedure AdicionarMascaraValores(Sender: TEdit);
@@ -115,6 +118,7 @@ type
 
     procedure CarregarCliente;
     procedure CarregarProduto;
+    procedure CarregaItemEdicao;
 
     function CriarPedidoService: TPedidoService;
   public
@@ -141,9 +145,15 @@ begin
   Qtd := StrToFloatDef(edtQtd.Text, 0);
   VlrUnit := StrToFloatDef(edtValor.Text, 0);
 
-  cdsProdutos.Append;
-  cdsProdutosidpeditem.AsInteger   := 0;
-  cdsProdutosidpedgeral.AsInteger  := NumPed;
+  if not FEditandoItem then
+  begin
+    cdsProdutos.Append;
+    cdsProdutosidpeditem.AsInteger := 0;
+    cdsProdutosidpedgeral.AsInteger := NumeroPedidoAtual;
+  end
+  else
+    cdsProdutos.Edit;
+
   cdsProdutosidproduto.AsInteger   := StrToInt(edtIdProduto.Text);
   cdsProdutosdescricao.AsString    := edtDescProduto.Text;
   cdsProdutosquantidade.AsFloat    := Qtd;
@@ -153,6 +163,7 @@ begin
 
   AtualizarTotal;
   LimparProduto;
+  LimparModoEdicaoItem;
   edtQtd.Text := '0,00';
   edtIdProduto.SetFocus;
 end;
@@ -219,6 +230,7 @@ begin
     end;
 
     LimpaTela;
+    edtIdCliente.SetFocus;
 
     ShowMsg('Pedido cancelado com sucesso.', mtInfo);
   except
@@ -233,11 +245,11 @@ var
   Service: TPedidoService;
   Pedido: TPedido;
 begin
-  LimpaTela;
-
   Num := StrToIntDef(InputBox('Carregar Pedido', 'Informe o número do pedido:', ''), 0);
   if Num <= 0 then
     Exit;
+
+  LimpaTela;
 
   Service := CriarPedidoService;
   try
@@ -258,6 +270,8 @@ begin
     finally
       Pedido.Free;
     end;
+
+    edtIdCliente.SetFocus;
   finally
     Service.Free;
   end;
@@ -305,6 +319,7 @@ end;
 procedure TfMain.btnNovoClick(Sender: TObject);
 begin
   LimpaTela;
+  edtIdCliente.SetFocus;
 end;
 
 procedure TfMain.dbgProdutosKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -337,8 +352,11 @@ begin
 
     if Key = vk_return then
     begin
-      dbgProdutos.Options := dbgProdutos.Options + [dgEditing];
-      cdsProdutos.Edit;
+      if cdsProdutos.IsEmpty then
+        Exit;
+
+      CarregaItemEdicao;
+      Key := 0;
     end;
   end;
 end;
@@ -405,11 +423,14 @@ end;
 procedure TfMain.FormShow(Sender: TObject);
 begin
   LimpaTela;
+  edtIdCliente.SetFocus;
 end;
 
 procedure TfMain.LimpaTela;
 begin
   FNumeroPedidoAtual := 0;
+
+  LimparModoEdicaoItem;
 
   edtIdCliente.Text := EmptyStr;
   LimparCliente;
@@ -422,8 +443,6 @@ begin
   cdsProdDel.EmptyDataSet;
 
   AtualizarTotal;
-
-  edtIdCliente.SetFocus;
 end;
 
 procedure TfMain.LimparCliente;
@@ -437,6 +456,15 @@ procedure TfMain.LimparProduto;
 begin
   edtDescProduto.Clear;
   edtValor.Text := '0,00';
+end;
+
+procedure TfMain.LimparModoEdicaoItem;
+begin
+  edtIdCliente.Enabled := True;
+
+  FEditandoItem := False;
+  FItemEditandoID := 0;
+  btnAdicionar.Caption := 'Adicionar Produto';
 end;
 
 procedure TfMain.CarregarCliente;
@@ -510,6 +538,24 @@ begin
   finally
     Service.Free;
   end;
+end;
+
+procedure TfMain.CarregaItemEdicao;
+begin
+  edtIdCliente.Enabled := False;
+
+  edtIdProduto.Text := cdsProdutosidproduto.AsString;
+  edtDescProduto.Text := cdsProdutosdescricao.AsString;
+
+  edtQtd.Text := FormatFloat(cVlrMask, cdsProdutosquantidade.AsFloat);
+  edtValor.Text := FormatFloat(cVlrMask, cdsProdutosvlrunitario.AsFloat);
+
+  // marca modo edição
+  FEditandoItem := True;
+  FItemEditandoID := cdsProdutosidpeditem.AsInteger;
+  btnAdicionar.Caption := 'Atualizar Produto';
+
+  edtQtd.SetFocus;
 end;
 
 procedure TfMain.AtualizarTotal;

@@ -126,7 +126,7 @@ begin
       Pedido.ValorTotal := Total;
 
       // Se for novo: insere cabeçalho
-      // Se for existente: atualiza total/obs
+      // Se for existente: atualiza
       if ANumeroPedido = 0 then
         FPedidoRepo.InserirCabecalho(Pedido)
       else
@@ -151,27 +151,32 @@ begin
         end;
       end;
 
-      // Insere itens NOVOS
+      // Insere itens NOVOS e atualiza itens existentes
       AItens.DisableControls;
       try
         AItens.First;
         while not AItens.Eof do
         begin
           ItemID := AItens.FieldByName('idpeditem').AsInteger;
+          CodProd := AItens.FieldByName('idproduto').AsInteger;
+          Qtd := AItens.FieldByName('quantidade').AsFloat;
+          VUnit := AItens.FieldByName('vlrunitario').AsFloat;
 
-          if ItemID <= 0 then
-          begin
-            CodProd := AItens.FieldByName('idproduto').AsInteger;
-            Qtd := AItens.FieldByName('quantidade').AsFloat;
-            VUnit := AItens.FieldByName('vlrunitario').AsFloat;
+          Item := TPedidoItem.Criar(CodProd, Qtd, VUnit);
+          try
+            Item.NumeroPedido := Pedido.NumeroPedido;
 
-            Item := TPedidoItem.Criar(CodProd, Qtd, VUnit);
-            try
-              Item.NumeroPedido := Pedido.NumeroPedido;
+            if ItemID <= 0 then
+            begin
               FItemRepo.InserirItem(Item);
-            finally
-              Item.Free;
+            end
+            else
+            begin
+              Item.ID := ItemID;
+              FItemRepo.AtualizarItem(Item);
             end;
+          finally
+            Item.Free;
           end;
 
           AItens.Next;

@@ -15,6 +15,7 @@ type
     function CarregarItens(const ANumeroPedido: Integer): TObjectList<TPedidoItem>;
     procedure ExcluirItensPorPedido(const ANumeroPedido: Integer);
     procedure ExcluirItemPorID(const AID: Integer);
+    procedure AtualizarItem(const AItem: TPedidoItem);
   end;
 
 implementation

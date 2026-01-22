@@ -26,6 +26,7 @@ type
     function CarregarItens(const ANumeroPedido: Integer): TObjectList<TPedidoItem>;
     procedure ExcluirItensPorPedido(const ANumeroPedido: Integer);
     procedure ExcluirItemPorID(const AID: Integer);
+    procedure AtualizarItem(const AItem: TPedidoItem);
   end;
 
 implementation
@@ -135,6 +136,33 @@ begin
     Qry.Connection := FConnection;
     Qry.SQL.Text := 'DELETE FROM PEDIDO_ITEM WHERE ID = :ID';
     Qry.ParamByName('ID').AsInteger := AID;
+    Qry.ExecSQL;
+  finally
+    Qry.Free;
+  end;
+end;
+
+procedure TPedidoItemRepositoryFirebird.AtualizarItem(const AItem: TPedidoItem);
+var
+  Qry: TFDQuery;
+begin
+  Qry := TFDQuery.Create(nil);
+  try
+    Qry.Connection := FConnection;
+    Qry.SQL.Text :=
+      'UPDATE PEDIDO_ITEM SET ' +
+      '  CODIGO_PRODUTO = :PROD, ' +
+      '  QUANTIDADE = :QTD, ' +
+      '  VLR_UNITARIO = :VUNIT, ' +
+      '  VLR_TOTAL = :VTOT ' +
+      'WHERE ID = :ID';
+
+    Qry.ParamByName('PROD').AsInteger := AItem.CodigoProduto;
+    Qry.ParamByName('QTD').AsFloat := AItem.Quantidade;
+    Qry.ParamByName('VUNIT').AsFloat := AItem.VlrUnitario;
+    Qry.ParamByName('VTOT').AsFloat := AItem.VlrTotal;
+    Qry.ParamByName('ID').AsInteger := AItem.ID;
+
     Qry.ExecSQL;
   finally
     Qry.Free;
