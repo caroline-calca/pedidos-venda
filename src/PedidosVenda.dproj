@@ -142,6 +142,7 @@
         </DCCReference>
         <DCCReference Include="infra\common\untUtils.pas"/>
         <DCCReference Include="infra\common\untAppBootstrap.pas"/>
+        <DCCReference Include="domain\untCliente.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

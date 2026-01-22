@@ -9,7 +9,8 @@ uses
   untDatabaseBootstrapFirebird in 'infra\firebird\untDatabaseBootstrapFirebird.pas',
   frmConfig in 'views\frmConfig.pas' {fConfig},
   untUtils in 'infra\common\untUtils.pas',
-  untAppBootstrap in 'infra\common\untAppBootstrap.pas';
+  untAppBootstrap in 'infra\common\untAppBootstrap.pas',
+  untCliente in 'domain\untCliente.pas';
 
 {$R *.res}
 
