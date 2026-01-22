@@ -5,6 +5,8 @@ interface
 uses
   System.SysUtils,
   FireDAC.Comp.Client,
+  FireDAC.Stan.Param,
+  Data.DB,
 
   untClienteRepository,
   untCliente,
@@ -15,7 +17,8 @@ type
   private
     FConnection: TFDConnection;
   public
-    constructor Create;
+    constructor Create; overload;
+    constructor Create(AConnection: TFDConnection); overload;
 
     procedure Inserir(const ACliente: TCliente);
     function ObterPorCodigo(const ACodigo: Integer): TCliente;
@@ -27,7 +30,19 @@ implementation
 
 constructor TClienteRepositoryFirebird.Create;
 begin
+  inherited Create;
+
   FConnection := FConnectionManager.Connection;
+end;
+
+constructor TClienteRepositoryFirebird.Create(AConnection: TFDConnection);
+begin
+  inherited Create;
+
+  if Assigned(AConnection) then
+    FConnection := AConnection
+  else
+    FConnection := FConnectionManager.Connection;
 end;
 
 procedure TClienteRepositoryFirebird.Inserir(const ACliente: TCliente);

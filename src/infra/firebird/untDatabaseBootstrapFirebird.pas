@@ -12,12 +12,18 @@ uses
   FireDAC.Phys.FBDef,
   FireDAC.DApt,
   FireDAC.VCLUI.Wait,
+  FireDAC.Stan.Param,
+  Data.DB,
   Vcl.Controls,
 
   untUtils,
+  untSeedData,
   untDatabaseBootstrap,
   untConnectionManager,
-  untConfigManager;
+  untConfigManager,
+  untCliente,
+  untClienteRepository,
+  untClienteRepositoryFirebird;
 
 type
   TDatabaseBootstrapFirebird = class(TInterfacedObject, IDatabaseBootstrap)
@@ -28,6 +34,9 @@ type
     procedure CriarEstrutura;
     procedure InserirDadosIniciais;
     procedure GarantirEvolucoes;
+
+    procedure InserirClientes;
+    procedure InserirProdutos;
 
     procedure ConectarBoot(const ACreateDatabase: Boolean = False);
   public
@@ -153,7 +162,30 @@ begin
   end;
 end;
 
-procedure TDatabaseBootstrapFirebird.InserirDadosIniciais;
+procedure TDatabaseBootstrapFirebird.InserirClientes;
+var
+  Repo: IClienteRepository;
+  Cliente: TCliente;
+  I: Integer;
+begin
+  Repo := TClienteRepositoryFirebird.Create(FConnBoot);
+
+  for I := Low(SEED_CLIENTES) to High(SEED_CLIENTES) do
+  begin
+    Cliente := TCliente.Criar(I + 1,
+                              SEED_CLIENTES[I].Nome,
+                              SEED_CLIENTES[I].Cidade,
+                              SEED_CLIENTES[I].UF);
+
+    try
+      Repo.Inserir(Cliente);
+    finally
+      Cliente.Free;
+    end;
+  end;
+end;
+
+procedure TDatabaseBootstrapFirebird.InserirProdutos;
 var
   Qry: TFDQuery;
   I: Integer;
@@ -161,21 +193,6 @@ begin
   Qry := TFDQuery.Create(nil);
   try
     Qry.Connection := FConnBoot;
-
-    // Injeção de CLIENTES
-    for I := 1 to 10 do
-    begin
-      Qry.SQL.Text :=
-        'INSERT INTO CLIENTE (CODIGO, NOME, CIDADE, UF) ' +
-        'VALUES (:COD, :NOME, :CIDADE, :UF)';
-
-      Qry.ParamByName('COD').AsInteger := I;
-      Qry.ParamByName('NOME').AsString := 'Cliente ' + I.ToString;
-      Qry.ParamByName('CIDADE').AsString := 'Cidade ' + I.ToString;
-      Qry.ParamByName('UF').AsString := 'SP';
-
-      Qry.ExecSQL;
-    end;
 
     // Injeção de PRODUTOS
     for I := 1 to 10 do
@@ -194,6 +211,12 @@ begin
   finally
     Qry.Free;
   end;
+end;
+
+procedure TDatabaseBootstrapFirebird.InserirDadosIniciais;
+begin
+  InserirClientes;
+  InserirProdutos;
 end;
 
 procedure TDatabaseBootstrapFirebird.GarantirEvolucoes;

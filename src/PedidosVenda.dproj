@@ -143,6 +143,10 @@
         <DCCReference Include="infra\common\untUtils.pas"/>
         <DCCReference Include="infra\common\untAppBootstrap.pas"/>
         <DCCReference Include="domain\untCliente.pas"/>
+        <DCCReference Include="repositories\interfaces\untClienteRepository.pas"/>
+        <DCCReference Include="repositories\untClienteRepositoryFirebird.pas"/>
+        <DCCReference Include="services\untClienteService.pas"/>
+        <DCCReference Include="infra\db\untSeedData.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

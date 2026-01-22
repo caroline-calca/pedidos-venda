@@ -64,7 +64,6 @@ end;
 procedure TConnectionManager.ConfigurarParametros(AParams: TStrings; const ACreateDatabase: Boolean = False);
 var
   Config: TConfigManager;
-  DatabasePath: string;
 begin
   Config := TConfigManager.Create;
   try

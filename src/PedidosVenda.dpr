@@ -10,7 +10,11 @@ uses
   frmConfig in 'views\frmConfig.pas' {fConfig},
   untUtils in 'infra\common\untUtils.pas',
   untAppBootstrap in 'infra\common\untAppBootstrap.pas',
-  untCliente in 'domain\untCliente.pas';
+  untCliente in 'domain\untCliente.pas',
+  untClienteRepository in 'repositories\interfaces\untClienteRepository.pas',
+  untClienteRepositoryFirebird in 'repositories\untClienteRepositoryFirebird.pas',
+  untClienteService in 'services\untClienteService.pas',
+  untSeedData in 'infra\db\untSeedData.pas';
 
 {$R *.res}
 
