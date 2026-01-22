@@ -23,14 +23,25 @@ uses
   untUtils,
   untConnectionManager,
   frmConfig,
+
   untCliente,
-  untProduto,
   untClienteService,
-  untProdutoService,
   untClienteRepository,
-  untProdutoRepository,
   untClienteRepositoryFirebird,
-  untProdutoRepositoryFirebird;
+
+  untProduto,
+  untProdutoService,
+  untProdutoRepository,
+  untProdutoRepositoryFirebird,
+
+  untPedido,
+  untPedidoRepository,
+  untPedidoRepositoryFirebird,
+  untPedidoService,
+
+  untPedidoItem,
+  untPedidoItemRepository,
+  untPedidoItemRepositoryFirebird;
 
 type
   TfMain = class(TForm)
@@ -69,6 +80,8 @@ type
     Label1: TLabel;
     edtCidadeCliente: TEdit;
     edtUFCliente: TEdit;
+    Label7: TLabel;
+    edtObservacao: TEdit;
     procedure btnConfigurarClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure dbgProdutosKeyDown(Sender: TObject; var Key: Word;
@@ -79,6 +92,8 @@ type
     procedure edtIdProdutoExit(Sender: TObject);
     procedure btnAdicionarClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure btnGravarClick(Sender: TObject);
+    procedure edtQtdExit(Sender: TObject);
   private
     const cVlrMask: String = '#,###,###,##0.00';
 
@@ -87,6 +102,7 @@ type
     procedure LimparProduto;
 
     procedure AtualizarTotal;
+    procedure AdicionarMascaraValores(Sender: TEdit);
     function ValidoAdicionar: Boolean;
 
     procedure CarregarCliente;
@@ -123,7 +139,7 @@ begin
 
   AtualizarTotal;
   LimparProduto;
-  edtQtd.Text := '0';
+  edtQtd.Text := '0,00';
   edtIdProduto.SetFocus;
 end;
 
@@ -173,6 +189,43 @@ begin
   end;
 end;
 
+procedure TfMain.btnGravarClick(Sender: TObject);
+var
+  PedidoRepo: IPedidoRepository;
+  ItemRepo: IPedidoItemRepository;
+  CliRepo: IClienteRepository;
+  ProdRepo: IProdutoRepository;
+  Service: TPedidoService;
+  NumPedido: Integer;
+begin
+  try
+    PedidoRepo := TPedidoRepositoryFirebird.Create(FConnectionManager.Connection);
+    ItemRepo   := TPedidoItemRepositoryFirebird.Create(FConnectionManager.Connection);
+    CliRepo    := TClienteRepositoryFirebird.Create(FConnectionManager.Connection);
+    ProdRepo   := TProdutoRepositoryFirebird.Create(FConnectionManager.Connection);
+
+    Service := TPedidoService.Create(PedidoRepo, ItemRepo, CliRepo, ProdRepo);
+    try
+      NumPedido := Service.GravarPedido(0,
+                                        StrToIntDef(edtIdCliente.Text, 0),
+                                        edtObservacao.Text,
+                                        cdsProdutos,
+                                        cdsProdDel);
+
+      ShowMsg('Pedido gravado com sucesso! Nº ' + NumPedido.ToString, mtInfo);
+
+      LimpaTela;
+    finally
+      Service.Free;
+    end;
+  except
+    on E: Exception do
+      ShowMsg('Erro ao gravar pedido: ' + E.Message, mtErr);
+  end;
+
+  edtIdCliente.SetFocus;
+end;
+
 procedure TfMain.dbgProdutosKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Key = vk_up then
@@ -215,7 +268,7 @@ end;
 procedure TfMain.edtIdProdutoChange(Sender: TObject);
 begin
   edtDescProduto.Text := EmptyStr;
-  edtQtd.Text := '0';
+  edtQtd.Text := '0,00';
   edtValor.Text := '0,00';
 end;
 
@@ -224,16 +277,21 @@ begin
   CarregarProduto;
 end;
 
-procedure TfMain.edtValorExit(Sender: TObject);
+procedure TfMain.edtQtdExit(Sender: TObject);
+begin
+  AdicionarMascaraValores(edtQtd);
+end;
+
+procedure TfMain.AdicionarMascaraValores(Sender: TEdit);
 var
   vValor: String;
 begin
   vValor := EmptyStr;
 
-  if edtValor.Text <> EmptyStr then
+  if Sender.Text <> EmptyStr then
   begin
-    vValor := StringReplace(edtValor.Text, '.', EmptyStr, [rfReplaceAll]);
-    vValor := StringReplace(edtValor.Text, ',', EmptyStr, [rfReplaceAll]);
+    vValor := StringReplace(Sender.Text, '.', EmptyStr, [rfReplaceAll]);
+    vValor := StringReplace(Sender.Text, ',', EmptyStr, [rfReplaceAll]);
 
     if (Length(vValor) = 1) then
       vValor := '0,0' + vValor
@@ -247,7 +305,12 @@ begin
   else
     vValor := '0,00';
 
-  edtValor.Text := vValor;
+  Sender.Text := vValor;
+end;
+
+procedure TfMain.edtValorExit(Sender: TObject);
+begin
+  AdicionarMascaraValores(edtValor);
 end;
 
 procedure TfMain.FormCreate(Sender: TObject);
@@ -267,7 +330,9 @@ begin
   LimparCliente;
   edtIdProduto.Text := EmptyStr;
   LimparProduto;
-  edtQtd.Text := '0';
+  edtQtd.Text := '0,00';
+  edtObservacao.Text := EmptyStr;
+
   cdsProdutos.EmptyDataSet;
   cdsProdDel.EmptyDataSet;
 end;

@@ -24,18 +24,11 @@ type
     FClienteRepo: IClienteRepository;
     FProdutoRepo: IProdutoRepository;
   public
-    constructor Create(
-      const APedidoRepo: IPedidoRepository;
-      const AItemRepo: IPedidoItemRepository;
-      const AClienteRepo: IClienteRepository;
-      const AProdutoRepo: IProdutoRepository
-    );
+    constructor Create(const APedidoRepo: IPedidoRepository; const AItemRepo: IPedidoItemRepository;
+      const AClienteRepo: IClienteRepository; const AProdutoRepo: IProdutoRepository);
 
-    function GravarPedido(
-      const ACodCliente: Integer;
-      const AObservacao: string;
-      AItens: TDataSet
-    ): Integer;
+    function GravarPedido(const ANumeroPedido: Integer; const ACodCliente: Integer;
+      const AObservacao: string; AItens: TDataSet;AItensDeletados: TDataSet): Integer;
 
     procedure CancelarPedido(const ANumero: Integer);
     procedure CarregarPedido(const ANumero: Integer; out APedido: TPedido; out AItens: TDataSet);
@@ -48,11 +41,8 @@ uses
   untConnectionManager,
   untUtils;
 
-constructor TPedidoService.Create(
-  const APedidoRepo: IPedidoRepository;
-  const AItemRepo: IPedidoItemRepository;
-  const AClienteRepo: IClienteRepository;
-  const AProdutoRepo: IProdutoRepository);
+constructor TPedidoService.Create(const APedidoRepo: IPedidoRepository; const AItemRepo: IPedidoItemRepository;
+  const AClienteRepo: IClienteRepository; const AProdutoRepo: IProdutoRepository);
 begin
   FPedidoRepo := APedidoRepo;
   FItemRepo := AItemRepo;
@@ -60,7 +50,8 @@ begin
   FProdutoRepo := AProdutoRepo;
 end;
 
-function TPedidoService.GravarPedido(const ACodCliente: Integer; const AObservacao: string; AItens: TDataSet): Integer;
+function TPedidoService.GravarPedido(const ANumeroPedido: Integer; const ACodCliente: Integer;
+  const AObservacao: string; AItens: TDataSet;AItensDeletados: TDataSet): Integer;
 var
   Conn: TFDConnection;
   Pedido: TPedido;
@@ -68,6 +59,7 @@ var
   Total: Double;
   CodProd: Integer;
   Qtd, VUnit: Double;
+  ItemID: Integer;
 begin
   Result := 0;
 
@@ -89,10 +81,16 @@ begin
 
   Conn.StartTransaction;
   try
-    Pedido := TPedido.Criar(ACodCliente, AObservacao);
-    try
-      Pedido.NumeroPedido := FPedidoRepo.ProximoNumeroPedido;
+    if ANumeroPedido > 0 then
+      Pedido := TPedido.Carregar(ANumeroPedido, Date, ACodCliente, 0, AObservacao)
+    else
+      Pedido := TPedido.Criar(ACodCliente, AObservacao);
 
+    try
+      if Pedido.NumeroPedido <= 0 then
+        Pedido.NumeroPedido := FPedidoRepo.ProximoNumeroPedido;
+
+      // Recalcula total e valida produtos
       Total := 0;
       AItens.DisableControls;
       try
@@ -127,23 +125,53 @@ begin
 
       Pedido.ValorTotal := Total;
 
-      FPedidoRepo.InserirCabecalho(Pedido);
+      // Se for novo: insere cabeçalho
+      // Se for existente: atualiza total/obs
+      if ANumeroPedido = 0 then
+        FPedidoRepo.InserirCabecalho(Pedido)
+      else
+        FPedidoRepo.AtualizarTotalEObs(Pedido.NumeroPedido, Pedido.ValorTotal, Pedido.Observacao);
 
+      // Exclui itens marcados no cdsProdDel
+      if Assigned(AItensDeletados) and not AItensDeletados.IsEmpty then
+      begin
+        AItensDeletados.DisableControls;
+        try
+          AItensDeletados.First;
+          while not AItensDeletados.Eof do
+          begin
+            ItemID := AItensDeletados.FieldByName('idpeditem').AsInteger;
+            if ItemID > 0 then
+              FItemRepo.ExcluirItemPorID(ItemID);
+
+            AItensDeletados.Next;
+          end;
+        finally
+          AItensDeletados.EnableControls;
+        end;
+      end;
+
+      // Insere itens NOVOS
       AItens.DisableControls;
       try
         AItens.First;
         while not AItens.Eof do
         begin
-          CodProd := AItens.FieldByName('idproduto').AsInteger;
-          Qtd := AItens.FieldByName('quantidade').AsFloat;
-          VUnit := AItens.FieldByName('vlrunitario').AsFloat;
+          ItemID := AItens.FieldByName('idpeditem').AsInteger;
 
-          Item := TPedidoItem.Criar(CodProd, Qtd, VUnit);
-          try
-            Item.NumeroPedido := Pedido.NumeroPedido;
-            FItemRepo.InserirItem(Item);
-          finally
-            Item.Free;
+          if ItemID <= 0 then
+          begin
+            CodProd := AItens.FieldByName('idproduto').AsInteger;
+            Qtd := AItens.FieldByName('quantidade').AsFloat;
+            VUnit := AItens.FieldByName('vlrunitario').AsFloat;
+
+            Item := TPedidoItem.Criar(CodProd, Qtd, VUnit);
+            try
+              Item.NumeroPedido := Pedido.NumeroPedido;
+              FItemRepo.InserirItem(Item);
+            finally
+              Item.Free;
+            end;
           end;
 
           AItens.Next;
@@ -158,11 +186,8 @@ begin
       Pedido.Free;
     end;
   except
-    on E: Exception do
-    begin
-      Conn.Rollback;
-      raise;
-    end;
+    Conn.Rollback;
+    raise;
   end;
 end;
 

@@ -2,7 +2,7 @@ object fMain: TfMain
   Left = 0
   Top = 0
   Caption = '001 - Pedidos de Venda'
-  ClientHeight = 492
+  ClientHeight = 571
   ClientWidth = 585
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -92,12 +92,13 @@ object fMain: TfMain
     Left = 0
     Top = 41
     Width = 585
-    Height = 410
+    Height = 489
     Align = alClient
     TabOrder = 1
+    ExplicitHeight = 410
     DesignSize = (
       585
-      410)
+      489)
     object Label2: TLabel
       Left = 41
       Top = 17
@@ -113,7 +114,7 @@ object fMain: TfMain
     end
     object Label3: TLabel
       Left = 34
-      Top = 53
+      Top = 52
       Width = 46
       Height = 15
       Caption = 'Produto:'
@@ -126,7 +127,7 @@ object fMain: TfMain
     end
     object Label4: TLabel
       Left = 15
-      Top = 88
+      Top = 87
       Width = 65
       Height = 15
       Caption = 'Quantidade:'
@@ -139,7 +140,7 @@ object fMain: TfMain
     end
     object Label5: TLabel
       Left = 215
-      Top = 88
+      Top = 87
       Width = 73
       Height = 15
       Caption = 'Valor unit'#225'rio:'
@@ -150,9 +151,22 @@ object fMain: TfMain
       Font.Style = []
       ParentFont = False
     end
+    object Label7: TLabel
+      Left = 15
+      Top = 124
+      Width = 65
+      Height = 15
+      Caption = 'Observa'#231#227'o:'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Calibri Light'
+      Font.Style = []
+      ParentFont = False
+    end
     object btnAdicionar: TButton
       Left = 425
-      Top = 83
+      Top = 82
       Width = 135
       Height = 25
       Anchors = [akTop, akRight]
@@ -168,14 +182,14 @@ object fMain: TfMain
     end
     object dbgProdutos: TDBGrid
       Left = 5
-      Top = 120
+      Top = 160
       Width = 572
-      Height = 285
+      Height = 324
       Anchors = [akLeft, akTop, akRight, akBottom]
       BorderStyle = bsNone
       DataSource = dsProdutos
       Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgRowSelect, dgConfirmDelete, dgCancelOnExit, dgTitleClick]
-      TabOrder = 5
+      TabOrder = 6
       TitleFont.Charset = DEFAULT_CHARSET
       TitleFont.Color = clWindowText
       TitleFont.Height = -12
@@ -188,14 +202,13 @@ object fMain: TfMain
       Top = 14
       Width = 68
       Height = 23
-      Alignment = taRightJustify
       NumbersOnly = True
       TabOrder = 0
       OnExit = edtIdClienteExit
     end
     object edtIdProduto: TEdit
       Left = 86
-      Top = 50
+      Top = 49
       Width = 68
       Height = 23
       Alignment = taRightJustify
@@ -206,23 +219,25 @@ object fMain: TfMain
     end
     object edtQtd: TEdit
       Left = 86
-      Top = 85
+      Top = 84
       Width = 110
       Height = 23
       Alignment = taRightJustify
+      MaxLength = 17
       NumbersOnly = True
       TabOrder = 2
-      Text = '0'
+      Text = '0,00'
+      OnExit = edtQtdExit
     end
     object edtValor: TEdit
       Left = 294
-      Top = 85
+      Top = 84
       Width = 110
       Height = 23
       Hint = 'Preencha apenas com n'#250'meros.'
       Alignment = taRightJustify
       Anchors = [akLeft, akTop, akRight]
-      MaxLength = 12
+      MaxLength = 17
       NumbersOnly = True
       ParentShowHint = False
       ShowHint = True
@@ -238,17 +253,17 @@ object fMain: TfMain
       Anchors = [akLeft, akTop, akRight]
       Color = cl3DLight
       Enabled = False
-      TabOrder = 6
+      TabOrder = 7
     end
     object edtDescProduto: TEdit
       Left = 160
-      Top = 50
+      Top = 49
       Width = 400
       Height = 23
       Anchors = [akLeft, akTop, akRight]
       Color = cl3DLight
       Enabled = False
-      TabOrder = 7
+      TabOrder = 8
     end
     object edtCidadeCliente: TEdit
       Left = 421
@@ -258,7 +273,7 @@ object fMain: TfMain
       Anchors = [akTop, akRight]
       Color = cl3DLight
       Enabled = False
-      TabOrder = 8
+      TabOrder = 9
     end
     object edtUFCliente: TEdit
       Left = 532
@@ -268,16 +283,26 @@ object fMain: TfMain
       Anchors = [akTop, akRight]
       Color = cl3DLight
       Enabled = False
-      TabOrder = 9
+      TabOrder = 10
+    end
+    object edtObservacao: TEdit
+      Left = 86
+      Top = 121
+      Width = 474
+      Height = 23
+      Anchors = [akLeft, akTop, akRight]
+      MaxLength = 255
+      TabOrder = 5
     end
   end
   object Panel4: TPanel
     Left = 0
-    Top = 451
+    Top = 530
     Width = 585
     Height = 41
     Align = alBottom
     TabOrder = 2
+    ExplicitTop = 451
     DesignSize = (
       585
       41)
@@ -321,6 +346,7 @@ object fMain: TfMain
       Font.Style = []
       ParentFont = False
       TabOrder = 0
+      OnClick = btnGravarClick
     end
   end
   object cdsProdutos: TClientDataSet
