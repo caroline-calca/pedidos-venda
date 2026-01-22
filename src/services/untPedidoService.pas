@@ -23,12 +23,20 @@ type
     FItemRepo: IPedidoItemRepository;
     FClienteRepo: IClienteRepository;
     FProdutoRepo: IProdutoRepository;
+
+    procedure ValidarEntradaPedido(const ACodCliente: Integer; AItens: TDataSet);
+    procedure ValidarClienteExiste(const ACodCliente: Integer);
+    function RecalcularTotalEValidarProdutos(AItens: TDataSet): Double;
+
+    procedure ExcluirItensDeletados(AItensDeletados: TDataSet);
+    procedure PersistirItens(AItens: TDataSet; const ANumeroPedido: Integer);
+
   public
     constructor Create(const APedidoRepo: IPedidoRepository; const AItemRepo: IPedidoItemRepository;
       const AClienteRepo: IClienteRepository; const AProdutoRepo: IProdutoRepository);
 
     function GravarPedido(const ANumeroPedido: Integer; const ACodCliente: Integer;
-      const AObservacao: string; AItens: TDataSet;AItensDeletados: TDataSet): Integer;
+      const AObservacao: string; AItens: TDataSet; AItensDeletados: TDataSet): Integer;
 
     procedure CancelarPedido(const ANumero: Integer);
     procedure CarregarPedido(const ANumero: Integer; out APedido: TPedido; out AItens: TClientDataSet);
@@ -50,32 +58,142 @@ begin
   FProdutoRepo := AProdutoRepo;
 end;
 
-function TPedidoService.GravarPedido(const ANumeroPedido: Integer; const ACodCliente: Integer;
-  const AObservacao: string; AItens: TDataSet;AItensDeletados: TDataSet): Integer;
-var
-  Conn: TFDConnection;
-  Pedido: TPedido;
-  Item: TPedidoItem;
-  Total: Double;
-  CodProd: Integer;
-  Qtd, VUnit: Double;
-  ItemID: Integer;
+procedure TPedidoService.ValidarEntradaPedido(const ACodCliente: Integer; AItens: TDataSet);
 begin
-  Result := 0;
-
   if ACodCliente <= 0 then
     raise Exception.Create('Informe um cliente válido.');
 
   if (AItens = nil) or (AItens.IsEmpty) then
     raise Exception.Create('Informe ao menos um item.');
+end;
 
-  var Cli := FClienteRepo.ObterPorCodigo(ACodCliente);
+procedure TPedidoService.ValidarClienteExiste(const ACodCliente: Integer);
+var
+  Cli: TObject;
+begin
+  Cli := FClienteRepo.ObterPorCodigo(ACodCliente);
   try
     if not Assigned(Cli) then
       raise Exception.Create('Cliente não encontrado.');
   finally
     Cli.Free;
   end;
+end;
+
+function TPedidoService.RecalcularTotalEValidarProdutos(AItens: TDataSet): Double;
+var
+  CodProd: Integer;
+  Qtd, VUnit: Double;
+begin
+  Result := 0;
+
+  AItens.DisableControls;
+  try
+    AItens.First;
+    while not AItens.Eof do
+    begin
+      CodProd := AItens.FieldByName('idproduto').AsInteger;
+      Qtd := AItens.FieldByName('quantidade').AsFloat;
+      VUnit := AItens.FieldByName('vlrunitario').AsFloat;
+
+      if CodProd <= 0 then
+        raise Exception.Create('Item com produto inválido.');
+      if Qtd <= 0 then
+        raise Exception.Create('Quantidade deve ser maior que zero.');
+      if VUnit < 0 then
+        raise Exception.Create('Valor unitário inválido.');
+
+      var Prod := FProdutoRepo.ObterPorCodigo(CodProd);
+      try
+        if not Assigned(Prod) then
+          raise Exception.Create(Format('Produto %d não encontrado.', [CodProd]));
+      finally
+        Prod.Free;
+      end;
+
+      Result := Result + (Qtd * VUnit);
+      AItens.Next;
+    end;
+  finally
+    AItens.EnableControls;
+  end;
+end;
+
+procedure TPedidoService.ExcluirItensDeletados(AItensDeletados: TDataSet);
+var
+  ItemID: Integer;
+begin
+  if not Assigned(AItensDeletados) or AItensDeletados.IsEmpty then
+    Exit;
+
+  AItensDeletados.DisableControls;
+  try
+    AItensDeletados.First;
+    while not AItensDeletados.Eof do
+    begin
+      ItemID := AItensDeletados.FieldByName('idpeditem').AsInteger;
+      if ItemID > 0 then
+        FItemRepo.ExcluirItemPorID(ItemID);
+
+      AItensDeletados.Next;
+    end;
+  finally
+    AItensDeletados.EnableControls;
+  end;
+end;
+
+procedure TPedidoService.PersistirItens(AItens: TDataSet; const ANumeroPedido: Integer);
+var
+  Item: TPedidoItem;
+  CodProd: Integer;
+  Qtd, VUnit: Double;
+  ItemID: Integer;
+begin
+  AItens.DisableControls;
+  try
+    AItens.First;
+    while not AItens.Eof do
+    begin
+      ItemID := AItens.FieldByName('idpeditem').AsInteger;
+      CodProd := AItens.FieldByName('idproduto').AsInteger;
+      Qtd := AItens.FieldByName('quantidade').AsFloat;
+      VUnit := AItens.FieldByName('vlrunitario').AsFloat;
+
+      Item := TPedidoItem.Criar(CodProd, Qtd, VUnit);
+      try
+        Item.NumeroPedido := ANumeroPedido;
+
+        if ItemID <= 0 then
+        begin
+          FItemRepo.InserirItem(Item);
+        end
+        else
+        begin
+          Item.ID := ItemID;
+          FItemRepo.AtualizarItem(Item);
+        end;
+      finally
+        Item.Free;
+      end;
+
+      AItens.Next;
+    end;
+  finally
+    AItens.EnableControls;
+  end;
+end;
+
+function TPedidoService.GravarPedido(const ANumeroPedido: Integer; const ACodCliente: Integer;
+  const AObservacao: string; AItens: TDataSet; AItensDeletados: TDataSet): Integer;
+var
+  Conn: TFDConnection;
+  Pedido: TPedido;
+  Total: Double;
+begin
+  Result := 0;
+
+  ValidarEntradaPedido(ACodCliente, AItens);
+  ValidarClienteExiste(ACodCliente);
 
   Conn := FConnectionManager.Connection;
 
@@ -90,100 +208,16 @@ begin
       if Pedido.NumeroPedido <= 0 then
         Pedido.NumeroPedido := FPedidoRepo.ProximoNumeroPedido;
 
-      // Recalcula total e valida produtos
-      Total := 0;
-      AItens.DisableControls;
-      try
-        AItens.First;
-        while not AItens.Eof do
-        begin
-          CodProd := AItens.FieldByName('idproduto').AsInteger;
-          Qtd := AItens.FieldByName('quantidade').AsFloat;
-          VUnit := AItens.FieldByName('vlrunitario').AsFloat;
-
-          if CodProd <= 0 then
-            raise Exception.Create('Item com produto inválido.');
-          if Qtd <= 0 then
-            raise Exception.Create('Quantidade deve ser maior que zero.');
-          if VUnit < 0 then
-            raise Exception.Create('Valor unitário inválido.');
-
-          var Prod := FProdutoRepo.ObterPorCodigo(CodProd);
-          try
-            if not Assigned(Prod) then
-              raise Exception.Create(Format('Produto %d não encontrado.', [CodProd]));
-          finally
-            Prod.Free;
-          end;
-
-          Total := Total + (Qtd * VUnit);
-          AItens.Next;
-        end;
-      finally
-        AItens.EnableControls;
-      end;
-
+      Total := RecalcularTotalEValidarProdutos(AItens);
       Pedido.ValorTotal := Total;
 
-      // Se for novo: insere cabeçalho
-      // Se for existente: atualiza
       if ANumeroPedido = 0 then
         FPedidoRepo.InserirCabecalho(Pedido)
       else
         FPedidoRepo.AtualizarCabecalho(Pedido.NumeroPedido, ACodCliente, Pedido.ValorTotal, Pedido.Observacao);
 
-      // Exclui itens marcados no cdsProdDel
-      if Assigned(AItensDeletados) and not AItensDeletados.IsEmpty then
-      begin
-        AItensDeletados.DisableControls;
-        try
-          AItensDeletados.First;
-          while not AItensDeletados.Eof do
-          begin
-            ItemID := AItensDeletados.FieldByName('idpeditem').AsInteger;
-            if ItemID > 0 then
-              FItemRepo.ExcluirItemPorID(ItemID);
-
-            AItensDeletados.Next;
-          end;
-        finally
-          AItensDeletados.EnableControls;
-        end;
-      end;
-
-      // Insere itens NOVOS e atualiza itens existentes
-      AItens.DisableControls;
-      try
-        AItens.First;
-        while not AItens.Eof do
-        begin
-          ItemID := AItens.FieldByName('idpeditem').AsInteger;
-          CodProd := AItens.FieldByName('idproduto').AsInteger;
-          Qtd := AItens.FieldByName('quantidade').AsFloat;
-          VUnit := AItens.FieldByName('vlrunitario').AsFloat;
-
-          Item := TPedidoItem.Criar(CodProd, Qtd, VUnit);
-          try
-            Item.NumeroPedido := Pedido.NumeroPedido;
-
-            if ItemID <= 0 then
-            begin
-              FItemRepo.InserirItem(Item);
-            end
-            else
-            begin
-              Item.ID := ItemID;
-              FItemRepo.AtualizarItem(Item);
-            end;
-          finally
-            Item.Free;
-          end;
-
-          AItens.Next;
-        end;
-      finally
-        AItens.EnableControls;
-      end;
+      ExcluirItensDeletados(AItensDeletados);
+      PersistirItens(AItens, Pedido.NumeroPedido);
 
       Conn.Commit;
       Result := Pedido.NumeroPedido;
@@ -206,8 +240,6 @@ begin
   Conn := FConnectionManager.Connection;
   Conn.StartTransaction;
   try
-    // se FK estiver ON DELETE CASCADE, pode excluir só o pedido.
-    // mas deixo explícito porque nem sempre o banco garante.
     FItemRepo.ExcluirItensPorPedido(ANumero);
     FPedidoRepo.ExcluirPedido(ANumero);
 
@@ -278,8 +310,7 @@ begin
 
     APedido := Pedido;
   finally
-    ItensObj.Free; // TObjectList criada como OwnsObjects=True no repo (se você fez assim)
-    // se o repo não usa OwnsObjects=True, me avisa que ajusto aqui
+    ItensObj.Free;
   end;
 end;
 
