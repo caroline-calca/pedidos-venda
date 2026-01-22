@@ -230,7 +230,7 @@ object fConfig: TfConfig
       Font.Name = 'Calibri Light'
       Font.Style = []
       ParentFont = False
-      TabOrder = 0
+      TabOrder = 1
       OnClick = btnCancelarClick
     end
     object btnSalvar: TButton
@@ -246,7 +246,7 @@ object fConfig: TfConfig
       Font.Name = 'Calibri Light'
       Font.Style = []
       ParentFont = False
-      TabOrder = 1
+      TabOrder = 2
       OnClick = btnSalvarClick
     end
     object btnTestarConexao: TBitBtn
@@ -266,7 +266,7 @@ object fConfig: TfConfig
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 2
+      TabOrder = 0
       OnClick = btnTestarConexaoClick
     end
   end
