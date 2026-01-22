@@ -14,7 +14,11 @@ uses
   untClienteRepository in 'repositories\interfaces\untClienteRepository.pas',
   untClienteRepositoryFirebird in 'repositories\untClienteRepositoryFirebird.pas',
   untClienteService in 'services\untClienteService.pas',
-  untSeedData in 'infra\db\untSeedData.pas';
+  untSeedData in 'infra\db\untSeedData.pas',
+  untProduto in 'domain\untProduto.pas',
+  untProdutoRepository in 'repositories\interfaces\untProdutoRepository.pas',
+  untProdutoRepositoryFirebird in 'repositories\untProdutoRepositoryFirebird.pas',
+  untProdutoService in 'services\untProdutoService.pas';
 
 {$R *.res}
 
