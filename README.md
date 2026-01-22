@@ -187,3 +187,6 @@ Esses testes demonstram o uso básico e correto da ferramenta.
 
 **Resultado esperado:** sistema exibe mensagens de validação e impede gravação/ações inválidas.
 
+---
+
+> Observação: o escopo original do desafio está disponível na pasta `/docs` apenas para referência.
