@@ -3,7 +3,7 @@ object fMain: TfMain
   Top = 0
   Caption = '001 - Pedidos de Venda'
   ClientHeight = 492
-  ClientWidth = 580
+  ClientWidth = 585
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,16 +11,17 @@ object fMain: TfMain
   Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poScreenCenter
+  OnShow = FormShow
   TextHeight = 15
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 580
+    Width = 585
     Height = 41
     Align = alTop
     TabOrder = 0
     DesignSize = (
-      580
+      585
       41)
     object Label1: TLabel
       Left = 19
@@ -36,7 +37,7 @@ object fMain: TfMain
       ParentFont = False
     end
     object btnCarregar: TButton
-      Left = 323
+      Left = 328
       Top = 10
       Width = 100
       Height = 25
@@ -51,7 +52,7 @@ object fMain: TfMain
       TabOrder = 0
     end
     object btnCancelar: TButton
-      Left = 429
+      Left = 434
       Top = 10
       Width = 100
       Height = 25
@@ -66,10 +67,11 @@ object fMain: TfMain
       TabOrder = 1
     end
     object btnConfigurar: TBitBtn
-      Left = 535
+      Left = 540
       Top = 10
       Width = 25
       Height = 25
+      Hint = 'Configura'#231#245'es'
       Anchors = [akTop, akRight]
       Caption = #9881#65039
       Font.Charset = DEFAULT_CHARSET
@@ -79,6 +81,8 @@ object fMain: TfMain
       Font.Style = []
       NumGlyphs = 2
       ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 2
       OnClick = btnConfigurarClick
     end
@@ -86,12 +90,12 @@ object fMain: TfMain
   object Panel2: TPanel
     Left = 0
     Top = 41
-    Width = 580
+    Width = 585
     Height = 410
     Align = alClient
     TabOrder = 1
     DesignSize = (
-      580
+      585
       410)
     object Label2: TLabel
       Left = 41
@@ -150,6 +154,7 @@ object fMain: TfMain
       Top = 83
       Width = 135
       Height = 25
+      Anchors = [akTop, akRight]
       Caption = 'Adicionar Produto'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -162,7 +167,7 @@ object fMain: TfMain
     object dbgProdutos: TDBGrid
       Left = 5
       Top = 120
-      Width = 567
+      Width = 572
       Height = 285
       Anchors = [akLeft, akTop, akRight, akBottom]
       BorderStyle = bsNone
@@ -174,6 +179,7 @@ object fMain: TfMain
       TitleFont.Height = -12
       TitleFont.Name = 'Segoe UI'
       TitleFont.Style = []
+      OnKeyDown = dbgProdutosKeyDown
     end
     object edtIdCliente: TEdit
       Left = 86
@@ -183,6 +189,7 @@ object fMain: TfMain
       Alignment = taRightJustify
       NumbersOnly = True
       TabOrder = 0
+      OnExit = edtIdClienteExit
     end
     object edtIdProduto: TEdit
       Left = 86
@@ -192,6 +199,8 @@ object fMain: TfMain
       Alignment = taRightJustify
       NumbersOnly = True
       TabOrder = 1
+      OnChange = edtIdProdutoChange
+      OnExit = edtIdProdutoExit
     end
     object edtQtd: TEdit
       Left = 86
@@ -210,18 +219,21 @@ object fMain: TfMain
       Height = 23
       Hint = 'Preencha apenas com n'#250'meros.'
       Alignment = taRightJustify
+      Anchors = [akLeft, akTop, akRight]
       MaxLength = 12
       NumbersOnly = True
       ParentShowHint = False
       ShowHint = True
       TabOrder = 3
       Text = '0,00'
+      OnExit = edtValorExit
     end
     object edtNomeCliente: TEdit
       Left = 160
       Top = 14
-      Width = 400
+      Width = 255
       Height = 23
+      Anchors = [akLeft, akTop, akRight]
       Color = cl3DLight
       Enabled = False
       TabOrder = 6
@@ -231,20 +243,41 @@ object fMain: TfMain
       Top = 50
       Width = 400
       Height = 23
+      Anchors = [akLeft, akTop, akRight]
       Color = cl3DLight
       Enabled = False
       TabOrder = 7
+    end
+    object edtCidadeCliente: TEdit
+      Left = 421
+      Top = 14
+      Width = 105
+      Height = 23
+      Anchors = [akTop, akRight]
+      Color = cl3DLight
+      Enabled = False
+      TabOrder = 8
+    end
+    object edtUFCliente: TEdit
+      Left = 532
+      Top = 14
+      Width = 28
+      Height = 23
+      Anchors = [akTop, akRight]
+      Color = cl3DLight
+      Enabled = False
+      TabOrder = 9
     end
   end
   object Panel4: TPanel
     Left = 0
     Top = 451
-    Width = 580
+    Width = 585
     Height = 41
     Align = alBottom
     TabOrder = 2
     DesignSize = (
-      580
+      585
       41)
     object Label6: TLabel
       Left = 19
@@ -273,7 +306,7 @@ object fMain: TfMain
       ParentFont = False
     end
     object btnGravar: TButton
-      Left = 460
+      Left = 465
       Top = 8
       Width = 100
       Height = 25
@@ -302,18 +335,17 @@ object fMain: TfMain
       Visible = False
     end
     object cdsProdutosidproduto: TIntegerField
-      DisplayLabel = 'Id'
+      DisplayLabel = 'C'#243'digo'
       FieldName = 'idproduto'
-      Visible = False
     end
     object cdsProdutosdescricao: TStringField
-      DisplayLabel = 'Produto'
+      DisplayLabel = 'Descri'#231#227'o'
       DisplayWidth = 55
       FieldName = 'descricao'
       Size = 150
     end
     object cdsProdutosquantidade: TIntegerField
-      DisplayLabel = 'Quantidade'
+      DisplayLabel = 'Qtd.'
       FieldName = 'quantidade'
     end
     object cdsProdutosvlrunitario: TFloatField

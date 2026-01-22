@@ -21,7 +21,16 @@ uses
   Vcl.Buttons,
 
   untUtils,
-  frmConfig;
+  untConnectionManager,
+  frmConfig,
+  untCliente,
+  untProduto,
+  untClienteService,
+  untProdutoService,
+  untClienteRepository,
+  untProdutoRepository,
+  untClienteRepositoryFirebird,
+  untProdutoRepositoryFirebird;
 
 type
   TfMain = class(TForm)
@@ -58,9 +67,25 @@ type
     cdsProdDelidpeditem: TIntegerField;
     btnConfigurar: TBitBtn;
     Label1: TLabel;
+    edtCidadeCliente: TEdit;
+    edtUFCliente: TEdit;
     procedure btnConfigurarClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure dbgProdutosKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure edtIdProdutoChange(Sender: TObject);
+    procedure edtValorExit(Sender: TObject);
+    procedure edtIdClienteExit(Sender: TObject);
+    procedure edtIdProdutoExit(Sender: TObject);
   private
-    { Private declarations }
+    const cVlrMask: String = '#,###,###,##0.00';
+
+    procedure LimpaTela;
+    procedure LimparCliente;
+    procedure LimparProduto;
+
+    procedure CarregarCliente;
+    procedure CarregarProduto;
   public
     { Public declarations }
   end;
@@ -80,6 +105,185 @@ begin
             'O sistema será encerrado para aplicar as mudanças.', mtInfo);
 
     Application.Terminate;
+  end;
+end;
+
+procedure TfMain.dbgProdutosKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key = vk_up then
+    dbgProdutos.Datasource.Dataset.Prior;
+
+  if Key = vk_down then
+    dbgProdutos.Datasource.Dataset.Next;
+
+  if (cdsProdutos.FieldByName('idproduto').AsInteger > 0) then
+  begin
+    if Key = vk_delete then
+    begin
+      if ShowMsg('Deseja excluir o item do pedido?', mtQuest) = mrYes then
+      begin
+        // adiciona em outro dataset, para excluir apenas ao gravar, na transação
+        if (cdsProdutos.FieldByName('idpeditem').AsInteger > 0) then
+        begin
+          cdsProdDel.Append;
+          cdsProdDel.FieldByName('idpeditem').AsInteger := cdsProdutos.FieldByName('idpeditem').AsInteger;
+          cdsProdDel.Post;
+        end;
+
+        cdsProdutos.Delete;
+      end;
+    end;
+
+    if Key = vk_return then
+    begin
+      dbgProdutos.Options := dbgProdutos.Options + [dgEditing];
+      cdsProdutos.Edit;
+    end;
+  end;
+end;
+
+procedure TfMain.edtIdClienteExit(Sender: TObject);
+begin
+  CarregarCliente;
+end;
+
+procedure TfMain.edtIdProdutoChange(Sender: TObject);
+begin
+  edtDescProduto.Text := EmptyStr;
+  edtQtd.Text := '0';
+  edtValor.Text := '0,00';
+end;
+
+procedure TfMain.edtIdProdutoExit(Sender: TObject);
+begin
+  CarregarProduto;
+end;
+
+procedure TfMain.edtValorExit(Sender: TObject);
+var
+  vValor: String;
+begin
+  vValor := EmptyStr;
+
+  if edtValor.Text <> EmptyStr then
+  begin
+    vValor := StringReplace(edtValor.Text, '.', EmptyStr, [rfReplaceAll]);
+    vValor := StringReplace(edtValor.Text, ',', EmptyStr, [rfReplaceAll]);
+
+    if (Length(vValor) = 1) then
+      vValor := '0,0' + vValor
+    else if (Length(vValor) = 2) then
+      vValor := '0,' + vValor
+    else
+      vValor := Copy(vValor, 1, Length(vValor)-2) + ',' + Copy(vValor, Length(vValor)-1, 2);
+
+    vValor := FormatFloat(cVlrMask, StrToFloat(vValor));
+  end
+  else
+    vValor := '0,00';
+
+  edtValor.Text := vValor;
+end;
+
+procedure TfMain.FormShow(Sender: TObject);
+begin
+  edtIdCliente.SetFocus;
+end;
+
+procedure TfMain.LimpaTela;
+begin
+  edtIdCliente.Text := EmptyStr;
+  edtIdClienteExit(nil);
+  edtIdProduto.Text := EmptyStr;
+  edtIdProdutoExit(nil);
+  edtQtd.Text := '0';
+  cdsProdutos.EmptyDataSet;
+  cdsProdDel.EmptyDataSet;
+end;
+
+procedure TfMain.LimparCliente;
+begin
+  edtNomeCliente.Clear;
+  edtCidadeCliente.Clear;
+  edtUFCliente.Clear;
+end;
+
+procedure TfMain.LimparProduto;
+begin
+  edtDescProduto.Clear;
+  edtValor.Text := '0,00';
+end;
+
+procedure TfMain.CarregarCliente;
+var
+  Cod: Integer;
+  Repo: IClienteRepository;
+  Service: TClienteService;
+  Cli: TCliente;
+begin
+  LimparCliente;
+
+  Cod := StrToIntDef(Trim(edtIdCliente.Text), 0);
+  if Cod <= 0 then
+    Exit;
+
+  Repo := TClienteRepositoryFirebird.Create(FConnectionManager.Connection);
+
+  Service := TClienteService.Create(Repo);
+  try
+    Cli := Service.BuscarCliente(Cod);
+    try
+      if not Assigned(Cli) then
+      begin
+        ShowMsg('Cliente não encontrado.', mtWarn);
+        edtIdCliente.SetFocus;
+        Exit;
+      end;
+
+      edtNomeCliente.Text := Cli.Nome;
+      edtCidadeCliente.Text := Cli.Cidade;
+      edtUFCliente.Text := Cli.UF;
+    finally
+      Cli.Free;
+    end;
+  finally
+    Service.Free;
+  end;
+end;
+
+procedure TfMain.CarregarProduto;
+var
+  Cod: Integer;
+  Repo: IProdutoRepository;
+  Service: TProdutoService;
+  Prod: TProduto;
+begin
+  LimparProduto;
+
+  Cod := StrToIntDef(Trim(edtIdProduto.Text), 0);
+  if Cod <= 0 then
+    Exit;
+
+  Repo := TProdutoRepositoryFirebird.Create(FConnectionManager.Connection);
+
+  Service := TProdutoService.Create(Repo);
+  try
+    Prod := Service.BuscarProduto(Cod);
+    try
+      if not Assigned(Prod) then
+      begin
+        ShowMsg('Produto não encontrado.', mtWarn);
+        edtIdProduto.SetFocus;
+        Exit;
+      end;
+
+      edtDescProduto.Text := Prod.Descricao;
+      edtValor.Text := FormatFloat(cVlrMask, Prod.PrecoVenda);
+    finally
+      Prod.Free;
+    end;
+  finally
+    Service.Free;
   end;
 end;
 
