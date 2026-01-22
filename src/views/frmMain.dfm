@@ -388,9 +388,11 @@ object fMain: TfMain
       FieldName = 'descricao'
       Size = 150
     end
-    object cdsProdutosquantidade: TIntegerField
+    object cdsProdutosquantidade: TFloatField
       DisplayLabel = 'Qtd.'
       FieldName = 'quantidade'
+      DisplayFormat = '#,###,###,##0.00'
+      EditFormat = '#,###,###,##0.00'
     end
     object cdsProdutosvlrunitario: TFloatField
       DisplayLabel = 'Valor Unit.'

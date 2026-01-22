@@ -70,7 +70,6 @@ type
     cdsProdutosidpedgeral: TIntegerField;
     cdsProdutosidproduto: TIntegerField;
     cdsProdutosdescricao: TStringField;
-    cdsProdutosquantidade: TIntegerField;
     cdsProdutosvlrunitario: TFloatField;
     cdsProdutosvlrtotal: TFloatField;
     dsProdutos: TDataSource;
@@ -83,6 +82,7 @@ type
     Label7: TLabel;
     edtObservacao: TEdit;
     btnNovo: TButton;
+    cdsProdutosquantidade: TFloatField;
     procedure btnConfigurarClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure dbgProdutosKeyDown(Sender: TObject; var Key: Word;
