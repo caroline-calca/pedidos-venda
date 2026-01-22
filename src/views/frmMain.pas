@@ -219,7 +219,6 @@ begin
     end;
 
     LimpaTela;
-    edtIdCliente.SetFocus;
 
     ShowMsg('Pedido cancelado com sucesso.', mtInfo);
   except
@@ -404,7 +403,6 @@ end;
 procedure TfMain.FormShow(Sender: TObject);
 begin
   LimpaTela;
-  edtIdCliente.SetFocus;
 end;
 
 procedure TfMain.LimpaTela;
@@ -422,6 +420,8 @@ begin
   cdsProdDel.EmptyDataSet;
 
   AtualizarTotal;
+
+  edtIdCliente.SetFocus;
 end;
 
 procedure TfMain.LimparCliente;

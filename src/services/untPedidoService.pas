@@ -130,7 +130,7 @@ begin
       if ANumeroPedido = 0 then
         FPedidoRepo.InserirCabecalho(Pedido)
       else
-        FPedidoRepo.AtualizarTotalEObs(Pedido.NumeroPedido, Pedido.ValorTotal, Pedido.Observacao);
+        FPedidoRepo.AtualizarCabecalho(Pedido.NumeroPedido, ACodCliente, Pedido.ValorTotal, Pedido.Observacao);
 
       // Exclui itens marcados no cdsProdDel
       if Assigned(AItensDeletados) and not AItensDeletados.IsEmpty then

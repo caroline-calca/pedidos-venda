@@ -11,7 +11,7 @@ type
 
     function ProximoNumeroPedido: Integer;
     procedure InserirCabecalho(const APedido: TPedido);
-    procedure AtualizarTotalEObs(const ANumero: Integer; const ATotal: Double; const AObs: string);
+    procedure AtualizarCabecalho(const ANumero: Integer; const ACodCliente: Integer; const ATotal: Double; const AObs: string);
 
     function CarregarCabecalho(const ANumero: Integer): TPedido;
     procedure ExcluirPedido(const ANumero: Integer);

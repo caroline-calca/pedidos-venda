@@ -22,7 +22,7 @@ type
 
     function ProximoNumeroPedido: Integer;
     procedure InserirCabecalho(const APedido: TPedido);
-    procedure AtualizarTotalEObs(const ANumero: Integer; const ATotal: Double; const AObs: string);
+    procedure AtualizarCabecalho(const ANumero: Integer; const ACodCliente: Integer; const ATotal: Double; const AObs: string);
 
     function CarregarCabecalho(const ANumero: Integer): TPedido;
     procedure ExcluirPedido(const ANumero: Integer);
@@ -83,7 +83,8 @@ begin
   end;
 end;
 
-procedure TPedidoRepositoryFirebird.AtualizarTotalEObs(const ANumero: Integer; const ATotal: Double; const AObs: string);
+procedure TPedidoRepositoryFirebird.AtualizarCabecalho(const ANumero: Integer;
+  const ACodCliente: Integer; const ATotal: Double; const AObs: string);
 var
   Qry: TFDQuery;
 begin
@@ -91,9 +92,10 @@ begin
   try
     Qry.Connection := FConnection;
     Qry.SQL.Text :=
-      'UPDATE PEDIDO SET VALOR_TOTAL = :TOTAL, OBSERVACAO = :OBS ' +
+      'UPDATE PEDIDO SET CODIGO_CLIENTE = :CLI, VALOR_TOTAL = :TOTAL, OBSERVACAO = :OBS ' +
       'WHERE NUMERO_PEDIDO = :NUM';
 
+    Qry.ParamByName('CLI').AsInteger := ACodCliente;
     Qry.ParamByName('TOTAL').AsFloat := ATotal;
     Qry.ParamByName('OBS').AsString := AObs;
     Qry.ParamByName('NUM').AsInteger := ANumero;
