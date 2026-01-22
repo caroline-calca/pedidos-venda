@@ -113,7 +113,6 @@ object fMain: TfMain
     Height = 489
     Align = alClient
     TabOrder = 1
-    ExplicitHeight = 410
     DesignSize = (
       585
       489)
@@ -320,7 +319,6 @@ object fMain: TfMain
     Height = 41
     Align = alBottom
     TabOrder = 2
-    ExplicitTop = 451
     DesignSize = (
       585
       41)

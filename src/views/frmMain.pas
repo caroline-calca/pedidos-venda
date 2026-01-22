@@ -101,6 +101,9 @@ type
   private
     const cVlrMask: String = '#,###,###,##0.00';
 
+    var
+      FNumeroPedidoAtual: Integer;
+
     procedure LimpaTela;
     procedure LimparCliente;
     procedure LimparProduto;
@@ -156,10 +159,7 @@ end;
 
 function TfMain.NumeroPedidoAtual: Integer;
 begin
-  Result := 0;
-
-  if not cdsProdutos.IsEmpty then
-    Result := cdsProdutosidpedgeral.AsInteger;
+  Result := FNumeroPedidoAtual;
 end;
 
 function TfMain.ValidoAdicionar: Boolean;
@@ -245,6 +245,8 @@ begin
     Pedido := nil;
     try
       Service.CarregarPedido(Num, Pedido, cdsProdutos);
+
+      FNumeroPedidoAtual := Num;
 
       edtIdCliente.Text := Pedido.CodigoCliente.ToString;
       CarregarCliente;
@@ -401,11 +403,14 @@ end;
 
 procedure TfMain.FormShow(Sender: TObject);
 begin
+  LimpaTela;
   edtIdCliente.SetFocus;
 end;
 
 procedure TfMain.LimpaTela;
 begin
+  FNumeroPedidoAtual := 0;
+
   edtIdCliente.Text := EmptyStr;
   LimparCliente;
   edtIdProduto.Text := EmptyStr;
@@ -415,6 +420,8 @@ begin
 
   cdsProdutos.EmptyDataSet;
   cdsProdDel.EmptyDataSet;
+
+  AtualizarTotal;
 end;
 
 procedure TfMain.LimparCliente;
